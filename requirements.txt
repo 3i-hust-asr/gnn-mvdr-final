@@ -1,1 +1,5 @@
 rir-generator==0.1.0
+soundfile
+librosa
+numpy
+scipy

@@ -1,1 +1,1 @@
-from .mix_wav import mix_wav
+from .gen_data import gen_data
