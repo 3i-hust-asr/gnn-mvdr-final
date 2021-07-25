@@ -49,11 +49,11 @@ class GNNFaS(nn.Module):
         B, L, C = x.shape
         t_length = torch.ones(B).int().fill_(L)
 
-        spectrum, phase, f_length = self.stft(x, t_length)
+        x, phase, f_length = self.stft(x, t_length)
         # spectrum: (B, T, C, F, 2), phase: (B, T, C, F)
 
         frame = f_length[0]
-        x = spectrum.view(B, frame, C, -1).permute(0, 2, 1, 3)
+        x = x.view(B, frame, C, -1).permute(0, 2, 1, 3)
         # (B, C, T, F*2)
         freq = x.shape[-1] 
 
@@ -80,6 +80,4 @@ class GNNFaS(nn.Module):
 
         print('decoded:', x.shape)
 
-        # print(type(spectrum), spectrum.dtype, spectrum.shape)
-
-        return spectrum
+        return x
