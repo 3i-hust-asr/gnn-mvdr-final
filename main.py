@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import scenario
 import util
 import os

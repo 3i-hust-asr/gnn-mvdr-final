@@ -1,7 +1,11 @@
 from .augmentation import Augmentation
+from .baseline import *
 
 def get_model(args):
-    model = None
+    if args.model == 'baseline':
+        model = GNNFaS()
+    else:
+        raise NotImplementedError
     return model
 
 def print_summary(model):
