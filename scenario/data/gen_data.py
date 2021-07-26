@@ -5,7 +5,6 @@ import os
 
 from .util import *
 
-
 def gen_data(args):
     # step 1: get list of wav for training
     clean_list = get_list('librispeech_360', args)

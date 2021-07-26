@@ -1,5 +1,8 @@
+from joblib import Parallel, delayed
 import rir_generator as rir
 import numpy as np
+
+from .util import *
 
 def get_source_position(room_dimension):
     # distance from source position and wall is 0.5 meter
@@ -40,8 +43,11 @@ def generate_one_rir(room_dimension):
     rir = np.concatenate([clean_rir, noise_rir], axis=1)
     return rir    
 
-def f(idx, room_dimension):
-    pass
+def f(mode, room_dimension, idx):
+    folder = create_mixed_folder(mode, 'rir')
+    x      = generate_one_rir(room_dimension)
+    path   = os.path.join(folder, f'{idx}.npz')
+    np.savez_compressed(path, x=x)
 
 def gen_rir(args):
     # configuration
@@ -59,8 +65,12 @@ def gen_rir(args):
     }
 
     # generate rirs
+    args_list = []
     for mode in modes:
         idx = 0
         for room_dimension in room_dimensions[mode]:
             for i in range(num_sample[mode]):
-                pass
+                args_list.append((mode, room_dimension, idx))
+                idx += 1
+        Parallel(n_jobs=os.cpu_count())(
+            delayed(f)(*args) for args in args_list)
