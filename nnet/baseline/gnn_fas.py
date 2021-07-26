@@ -8,14 +8,14 @@ from ..common import Stft
 
 class GCN(nn.Module):
 
-    def __init__(self, input_dim, output_dim, bias=True):
+    def __init__(self, input_dim, output_dim, args, bias=True):
         super(GCN, self).__init__()
         self.adj_transform = nn.Linear(input_dim*2, 1)
 
-        self.weight = nn.Parameter(torch.Tensor(input_dim, output_dim))
+        self.weight = nn.Parameter(torch.Tensor(input_dim, output_dim)).to(args.device)
         torch.nn.init.xavier_normal_(self.weight)
         if bias:
-            self.bias = nn.Parameter(torch.Tensor(output_dim))
+            self.bias = nn.Parameter(torch.Tensor(output_dim)).to(args.device)
             torch.nn.init.normal_(self.bias)
         else:
             self.register_parameter('bias', None)
@@ -30,7 +30,7 @@ class GCN(nn.Module):
         # non-linear function
         adj = self.adj_transform(adj).squeeze(-1) # (B, N, N)
         # normalize
-        adj = adj.softmax(dim=1)
+        # adj = adj.softmax(dim=1)
         # add self loop
         idx = torch.arange(N, dtype=torch.long, device=x.device)
         adj[:, idx, idx] += 1.0
@@ -49,7 +49,7 @@ class GCN(nn.Module):
 
 class GNNFaS(nn.Module):
 
-    def __init__(self):
+    def __init__(self, args):
         super().__init__()
         self.n_filters = [64, 128, 128, 256, 256, 256]
         self.kernel_size = 3
@@ -78,7 +78,7 @@ class GNNFaS(nn.Module):
             chin = n_filter
 
         hidden = 512
-        self.gcn = GCN(hidden, hidden)
+        self.gcn = GCN(hidden, hidden, args)
 
         self.linear_1 = nn.Linear(4096, hidden)
         self.linear_2 = nn.Linear(hidden, 4096)
@@ -128,7 +128,8 @@ class GNNFaS(nn.Module):
 
         # GCN
         _, h, t, f = x.shape
-        x = x.view(B, C, -1)
+        x = x.contiguous().view(B, C, -1)
+        # x = x.reshape(B, C, -1)
         # B, C, 4096
         x = self.linear_1(x)
         # B, C, hidden

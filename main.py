@@ -13,3 +13,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# 00%|█| 500/500 [08:00<00:00,  1.04it/s, estoi:enhanced=0.653, pesq:enhanced=1.85, si_snr:enhanced=11.6, si_snr:noisy=5.94, stoi:enhanc

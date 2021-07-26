@@ -65,8 +65,8 @@ def gen_rir(args):
     }
 
     # generate rirs
-    args_list = []
     for mode in modes:
+        args_list = []
         idx = 0
         for room_dimension in room_dimensions[mode]:
             for i in range(num_sample[mode]):

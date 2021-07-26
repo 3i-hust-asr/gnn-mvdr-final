@@ -30,30 +30,30 @@ def train_one_example(args):
     # y = cleans.detach().cpu().numpy()
     y = clean_reverbs[:, :, 0].detach().cpu().numpy()
 
-    print(x.shape, y.shape)
-    exit()
     bar = tqdm.tqdm(range(args.num_epoch))
-    for i in bar:
-        # Train step
-        optimizer.zero_grad()
-        # compute loss
-        # loss_dict = model.compute_loss(mix=inputs, clean=cleans, noise=noises)
-        loss = model.compute_loss(mix=inputs, clean=clean_reverbs[:, :, 0], noise=noises)
-        # backward and update weight
-        loss.backward()
-        # clip grad norm
-        torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad_norm)
-        optimizer.step()
+    
+    with torch.autograd.set_detect_anomaly(True):
+        for i in bar:
+            # Train step
+            optimizer.zero_grad()
+            # compute loss
+            # loss_dict = model.compute_loss(mix=inputs, clean=cleans, noise=noises)
+            loss = model.compute_loss(mix=inputs, clean=clean_reverbs[:, :, 0])
+            # backward and update weight
+            loss.backward()
+            # clip grad norm
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad_norm)
+            optimizer.step()
 
-        # Validation step
-        # compute loss
-        y_hat_device = model(inputs)
-        y_hat = y_hat_device.detach().cpu().numpy()
-        # compute metrics
-        metrics = compute_metrics(x, y, y_hat, args)
-        # compute mean metrics
-        for key in metrics:
-            metrics[key] = metrics[key].mean()
-            
-        if i % 10 == 0:
-            bar.set_postfix(**metrics)
+            # Validation step
+            # compute loss
+            y_hat_device = model(inputs)
+            y_hat = y_hat_device.detach().cpu().numpy()
+            # compute metrics
+            metrics = compute_metrics(x, y, y_hat, args)
+            # compute mean metrics
+            for key in metrics:
+                metrics[key] = metrics[key].mean()
+                
+            if i % 10 == 0:
+                bar.set_postfix(**metrics)

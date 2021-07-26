@@ -148,16 +148,13 @@ class Tencent(nn.Module):
 
         wav, _ = self.stft.inverse(out_spec, t_length)
         # (Batch, Sample)
-        return wav, None
+        return wav
 
 
-    def compute_loss(self, mix, clean, noise):
+    def compute_loss(self, mix, clean):
         enhanced, _ = self(mix)
         loss = self.si_snr_loss(enhanced, clean)
-        return {
-            'loss': loss,
-        }
-
+        return loss
 
     def si_snr_loss(self, ref, inf):
         """si-snr loss

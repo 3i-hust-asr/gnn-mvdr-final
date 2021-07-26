@@ -1,13 +1,8 @@
 from torch.utils.tensorboard import SummaryWriter
-from dgl.nn import EdgeWeightNorm, GraphConv
-from torch_geometric.nn import GCNConv
 import torch.nn as nn
 import numpy as np
 import torch
-import dgl
-
 import nnet
-
 
 def test_model(args):
     print('test model')
