@@ -9,7 +9,7 @@ import os
 class NoisyDataset(Dataset):
 
     def __init__(self, args, mode='train'):
-        self.path = './mixed'
+        self.path = './data'
         self.clean_path = [f for f in os.listdir(self.path) if f.startswith('clean')]
         self.noise_path = [f for f in os.listdir(self.path) if f.startswith('noise')]
         self.rir_path   = [f for f in os.listdir(self.path) if f.startswith('rir')]
@@ -59,11 +59,12 @@ def get_loader(args):
                             batch_size=args.batch_size,
                             num_workers=args.num_worker)
     
-    dev_dataset = NoisyDataset(args, mode='dev')
-    dev_loader  = DataLoader(dataset=dev_dataset, 
-                            drop_last=True, 
-                            collate_fn=collate_fn,
-                            batch_size=args.batch_size,
-                            num_workers=args.num_worker)
+    dev_loader = None
+    # dev_dataset = NoisyDataset(args, mode='dev')
+    # dev_loader  = DataLoader(dataset=dev_dataset, 
+    #                         drop_last=True, 
+    #                         collate_fn=collate_fn,
+    #                         batch_size=args.batch_size,
+    #                         num_workers=args.num_worker)
 
     return train_loader, dev_loader
