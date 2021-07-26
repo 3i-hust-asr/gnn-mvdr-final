@@ -28,7 +28,7 @@ class GCN(nn.Module):
             for j in range(N):
                 adj[:, i, j, :] = torch.cat((x[:, i, :], x[:, j, :]), dim=-1)
         # non-linear function
-        adj = self.adj_transform(adj).squeeze(-1)
+        adj = self.adj_transform(adj).squeeze(-1) # (B, N, N)
         # normalize
         adj = adj.softmax(dim=1)
         # add self loop
