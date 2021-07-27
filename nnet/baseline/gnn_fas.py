@@ -79,12 +79,12 @@ class GNNFaS(nn.Module):
             chin = n_filter
 
         linear_hidden = 160
-        gcn_hidden = 256
+        gcn_hidden = 64
 
         if self.use_linear:
             self.linear_1 = nn.Linear(linear_hidden, gcn_hidden)
-            self.linear_2 = nn.Linear(gcn_hidden, linear_hidden)
             self.gcn = GCN(gcn_hidden, gcn_hidden, args)
+            self.linear_2 = nn.Linear(gcn_hidden, linear_hidden)
         else:
             self.gcn = GCN(linear_hidden, linear_hidden, args)
 
