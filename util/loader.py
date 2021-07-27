@@ -9,27 +9,21 @@ import os
 class NoisyDataset(Dataset):
 
     def __init__(self, args, mode='train'):
-        self.path = './data'
-        self.clean_path = [f for f in os.listdir(self.path) if f.startswith('clean')]
-        self.noise_path = [f for f in os.listdir(self.path) if f.startswith('noise')]
-        self.rir_path   = [f for f in os.listdir(self.path) if f.startswith('rir')]
+        self.clean_path = [f for f in os.listdir(f'../clean/{mode}')]
+        self.noise_path = [f for f in os.listdir(f'../noise/{mode}')]
+        self.rir_path = [f for f in os.listdir(f'../rir/{mode}')]
 
         self.args = args
         self.device = args.device
         self.mode = mode
 
     def __len__(self):
-        if self.mode == 'train':
-            return self.args.num_sample
-        elif self.mode == 'dev':
-            return self.args.num_sample // 50
-        else:
-            raise NotImplementedError
+        return len(self.clean_path)
 
     def __getitem__(self, idx):
-        clean_idx = np.random.randint(low=0, high=len(self.clean_path))
-        noise_idx = np.random.randint(low=0, high=len(self.noise_path))
-        rir_idx = np.random.randint(low=0, high=len(self.rir_path))
+        clean_idx = idx % len(self.clean_path)
+        noise_idx = idx % len(self.noise_path)
+        rir_idx = idx % len(self.rir_path)
 
         # clean
         clean = torch.tensor(np.load(os.path.join(self.path, self.clean_path[clean_idx]))['x'], dtype=torch.float32)
