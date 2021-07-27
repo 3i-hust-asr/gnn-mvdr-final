@@ -166,7 +166,7 @@ class Trainer:
 
             ##########################################################################################
             # evalute
-            if self.args.evaluate:
+            if self.args.evaluate and (epoch % self.args.eval_iter == 0):
                 self.model.eval()
                 with tqdm.tqdm(self.dev_loader, unit="it") as pbar:
                     pbar.set_description(f'Evaluate epoch {epoch}')
