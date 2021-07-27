@@ -19,6 +19,7 @@ def get_args():
 
     parser.add_argument('--model', type=str, default='baseline')
 
+    parser.add_argument('--evaluate', action='store_true')
     parser.add_argument('--optimizer', type=str, default='adamw')
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--shuffle', action='store_true')
