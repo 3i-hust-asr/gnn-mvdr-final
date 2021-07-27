@@ -55,5 +55,5 @@ def train_one_example(args):
             for key in metrics:
                 metrics[key] = metrics[key].mean()
                 
-            if i % 10 == 0:
-                bar.set_postfix(**metrics)
+            # if i % 10 == 0:
+            bar.set_postfix(**metrics)
