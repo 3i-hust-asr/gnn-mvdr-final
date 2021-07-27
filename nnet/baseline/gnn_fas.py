@@ -49,13 +49,14 @@ class GCN(nn.Module):
 
 class GNNFaS(nn.Module):
 
-    def __init__(self, args):
+    def __init__(self, args, use_linear=True):
         super().__init__()
-        self.n_filters = [64, 128, 128, 256, 256, 256]
+        self.n_filters = [64, 128, 256, 128, 64]
         self.kernel_size = 3
         self.stride = 2
+        self.use_linear = use_linear
 
-        chin = 2 # complex
+        chin = 8 
 
         self.stft = Stft(n_fft=1024, win_length=1024, hop_length=512, window='hann')
         self.encoder = nn.ModuleList()
@@ -77,11 +78,15 @@ class GNNFaS(nn.Module):
 
             chin = n_filter
 
-        hidden = 512
-        self.gcn = GCN(hidden, hidden, args)
+        linear_hidden = 160
+        gcn_hidden = 256
 
-        self.linear_1 = nn.Linear(4096, hidden)
-        self.linear_2 = nn.Linear(hidden, 4096)
+        if self.use_linear:
+            self.linear_1 = nn.Linear(linear_hidden, gcn_hidden)
+            self.linear_2 = nn.Linear(gcn_hidden, linear_hidden)
+            self.gcn = GCN(gcn_hidden, gcn_hidden, args)
+        else:
+            self.gcn = GCN(linear_hidden, linear_hidden, args)
 
 
     def valid_length(self, length):
@@ -99,24 +104,21 @@ class GNNFaS(nn.Module):
 
         x, _, f_length = self.stft(x, t_length)
         # (B, T, C, F, 2)
+        # print('input  :', x.shape)
 
         r, i = x[..., 0], x[..., 1]
         # (B, T, C, F)
 
-        x = x.permute(0, 2, 4, 1, 3)
-        # (B, C, 2, T, F)
-
         frame = f_length[0]
+        x = x.view(B, frame, C, -1).transpose(1, 2)
         freq = x.shape[-1] 
-        x = x.view(B*C, 2, frame, freq)
-        # (B*C, 2, T, F)
-        # print('input  :', x.shape)
+        # (B, C, T, 2F)
 
         # padding
         valid_T = self.valid_length(frame)
         valid_F = self.valid_length(freq)
         x = F.pad(x, (0, valid_F - freq, 0, valid_T - frame))
-        # (B*C, 2, valid_T, valid_F)
+        # (B, C, valid_T, valid_F)
         # print('padded :', x.shape)
 
         # encoding
@@ -124,23 +126,25 @@ class GNNFaS(nn.Module):
         for encode in self.encoder:
             x = encode(x)
             skips.append(x)
-        # B*C, filter[-1], t, f
+        # B, node, t, f
+        # print('encoded:', x.shape)
 
         # GCN
-        _, h, t, f = x.shape
-        x = x.contiguous().view(B, C, -1)
-        # x = x.reshape(B, C, -1)
-        # B, C, 4096
-        x = self.linear_1(x)
-        # B, C, hidden
+        _, node, t, f = x.shape
+        x = x.contiguous().view(B, node, -1)
+        # B, node, tf
+        if self.use_linear:
+            x = self.linear_1(x)
+            # B, node, hidden
         gcn_out = self.gcn(x)
-        # B, C, hidden
+        # B, node, hidden
         x = x * gcn_out
-        # B, C, hidden
-        x = self.linear_2(x)
-        # B, C, 4096
-        x = x.view(B*C, h, t, f)
-        # B*C, filter[-1], t, f
+        # B, node, hidden
+        if self.use_linear:
+            x = self.linear_2(x)
+            # B, node, tf
+        x = x.view(B, node, t, f)
+        # B, node, t, f
         # print('gcn    :', x.shape)
 
         # decoding
@@ -149,16 +153,19 @@ class GNNFaS(nn.Module):
             # x = torch.cat((x, skip), dim=-1)
             x = x + skip
             x = decode(x)
-        # B*C, 2, T, F
+        # (B, C, valid_T, valid_F)
         # print('decoded:', x.shape)
 
+        # cutoff
+        x = x[:, :, :frame, :freq]
+        # B, C, T, F
         # attention mask
-        x = x.view(B, C, 2, valid_T, valid_F)
-        # B, C, 2, valid_T, valid_F
+        x = x.view(B, C, frame, freq//2, 2)
+        # B, C, T, F, 2
         mask = x.mean(dim=1)
-        # B, 2, valid_T, valid_F
-        r_mask = mask[:, 0, :frame, :freq]
-        i_mask = mask[:, 1, :frame, :freq]
+        # B, T, F, 2
+        r_mask = mask[..., 0]
+        i_mask = mask[..., 1]
         # B, T, F
 
         # reference channel = 0
