@@ -97,7 +97,7 @@ class GNNFaS(nn.Module):
             length = (length - 1) * self.stride + self.kernel_size
         return int(length)
 
-    def forward(self, x):
+    def forward(self, x, return_spec=False):
         # (B, L, C)
         B, L, C = x.shape
         t_length = torch.ones(B).int().fill_(L)
@@ -178,14 +178,23 @@ class GNNFaS(nn.Module):
         # B, T, F
         out_spec = torch.stack([r_out_spec, i_out_spec], dim=-1)
         # B, T, F, 2
+
         x, _ = self.stft.inverse(out_spec, t_length)
         # B, L
+
+        if return_spec:
+            return x, out_spec
+
         return x
 
 
     def compute_loss(self, mix, clean):
-        enhanced = self(mix)
-        return self.si_snr_loss(enhanced, clean)
+        enhanced_signal, enhanced_spec = self(mix, return_spec=True)
+        clean_spec = self.stft(clean)[0]
+        loss_mag = torch.view_as_complex(clean_spec - enhanced_spec).abs().mean()
+        loss_raw = (clean - enhanced_signal).abs().mean()
+        loss_sisnr = self.si_snr_loss(enhanced_signal, clean)
+        return 3*loss_raw + loss_mag + loss_sisnr
 
 
     def si_snr_loss(self, ref, inf):
