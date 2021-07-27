@@ -48,17 +48,16 @@ def get_loader(args):
 
     train_dataset = NoisyDataset(args, mode='train')
     train_loader  = DataLoader(dataset=train_dataset, 
-                            drop_last=True, 
-                            collate_fn=collate_fn,
-                            batch_size=args.batch_size,
-                            num_workers=args.num_worker)
+                               drop_last=True, 
+                               collate_fn=collate_fn,
+                               batch_size=args.batch_size,
+                               num_workers=args.num_worker)
     
-    dev_loader = None
-    # dev_dataset = NoisyDataset(args, mode='dev')
-    # dev_loader  = DataLoader(dataset=dev_dataset, 
-    #                         drop_last=True, 
-    #                         collate_fn=collate_fn,
-    #                         batch_size=args.batch_size,
-    #                         num_workers=args.num_worker)
+    dev_dataset = NoisyDataset(args, mode='dev')
+    dev_loader  = DataLoader(dataset=dev_dataset, 
+                             drop_last=True, 
+                             collate_fn=collate_fn,
+                             batch_size=args.batch_size,
+                             num_workers=args.num_worker)
 
     return train_loader, dev_loader
