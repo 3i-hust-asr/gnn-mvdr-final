@@ -1,6 +1,5 @@
 from .augmentation import Augmentation
 from .baseline import *
-from ._ import *
 
 def get_model(args):
     if args.model == 'baseline':
