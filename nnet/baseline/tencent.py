@@ -43,9 +43,6 @@ class Tencent(nn.Module):
         self.linear = nn.Linear(rnn_units * fac, num_bins * 2)
 
     def forward(self, x):
-        # (Batch, Channel, Sample)
-        x = x.transpose(1, 2)
-
         # (Batch, Sample, Channel)
         B, L, C = x.shape
         t_length = torch.ones(B).int().fill_(L)
