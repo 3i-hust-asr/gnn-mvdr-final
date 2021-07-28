@@ -30,7 +30,6 @@ def get_args():
     parser.add_argument('--limit_train_batch', type=int, default=-1)
     parser.add_argument('--limit_val_batch', type=int, default=-1)
     parser.add_argument('--log_iter', type=int, default=100)
-    parser.add_argument('--non_ipd', action='store_true')
 
     parser.add_argument('--clear_cache', action='store_true')
 
