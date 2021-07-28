@@ -95,7 +95,7 @@ class Tencent(nn.Module):
 
 
     def compute_loss(self, mix, clean):
-        enhanced, _ = self(mix)
+        enhanced = self(mix)
         loss = self.si_snr_loss(enhanced, clean)
         return loss
 

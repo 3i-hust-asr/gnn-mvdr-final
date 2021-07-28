@@ -7,7 +7,7 @@ def get_args():
     
     parser.add_argument('--seed', type=int, default=0)
 
-    parser.add_argument('--scenario', type=str, default='train_one_example')
+    parser.add_argument('--scenario', type=str, default='test_model')
 
     parser.add_argument('--num_worker', type=int, default=os.cpu_count())
     parser.add_argument('--batch_size', type=int, default=1)
@@ -17,7 +17,7 @@ def get_args():
     parser.add_argument('--num_test', type=int, default=3000)
     parser.add_argument('--data_dir', type=str, default='../../dataset')
 
-    parser.add_argument('--model', type=str, default='baseline')
+    parser.add_argument('--model', type=str, default='tencent')
 
     parser.add_argument('--evaluate', action='store_true')
     parser.add_argument('--eval_iter', type=int, default=1)
