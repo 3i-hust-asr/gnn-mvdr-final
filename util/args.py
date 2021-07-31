@@ -10,7 +10,7 @@ def get_args():
     parser.add_argument('--scenario', type=str, default='train')
 
     parser.add_argument('--num_worker', type=int, default=os.cpu_count())
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=50)
 
     parser.add_argument('--num_train', type=int, default=3600)
     parser.add_argument('--num_dev', type=int, default=3000)
