@@ -185,7 +185,7 @@ class GNNFaS1(nn.Module):
         clean_spec = self.stft(clean)[0]
         loss_mag = torch.view_as_complex(clean_spec - enhanced_spec).abs().mean()
         loss_raw = (clean - enhanced_signal).abs().mean()
-        loss_sisnr = self.si_snr_loss(enhanced_signal, clean)
+        loss_sisnr = 0 #self.si_snr_loss(enhanced_signal, clean)
         return loss_raw + loss_mag + loss_sisnr
 
 
