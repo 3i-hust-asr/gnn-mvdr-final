@@ -4,6 +4,8 @@ from .baseline import *
 def get_model(args):
     if args.model == 'baseline':
         model = GNNFaS(args)
+    elif args.model == 'baseline1':
+        model = GNNFaS1(args)
     elif args.model == 'tencent':
         model = Tencent()
     else:

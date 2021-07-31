@@ -47,16 +47,15 @@ class GCN(nn.Module):
         return out
 
 
-class GNNFaS(nn.Module):
+class GNNFaS1(nn.Module):
 
-    def __init__(self, args, use_linear=True):
+    def __init__(self, args):
         super().__init__()
-        self.n_filters = [64, 128, 256, 128, 32]
+        self.n_filters = [64, 128, 128, 256, 256, 256]
         self.kernel_size = 3
         self.stride = 2
-        self.use_linear = use_linear
 
-        chin = 8 
+        chin = 2 # complex
 
         self.stft = Stft(n_fft=1024, win_length=1024, hop_length=512, window='hann')
         self.encoder = nn.ModuleList()
@@ -78,15 +77,11 @@ class GNNFaS(nn.Module):
 
             chin = n_filter
 
-        linear_hidden = 160
-        gcn_hidden = 32
+        hidden = 512
+        self.gcn = GCN(hidden, hidden, args)
 
-        if self.use_linear:
-            self.linear_1 = nn.Linear(linear_hidden, gcn_hidden)
-            self.gcn = GCN(gcn_hidden, gcn_hidden, args)
-            self.linear_2 = nn.Linear(gcn_hidden, linear_hidden)
-        else:
-            self.gcn = GCN(linear_hidden, linear_hidden, args)
+        self.linear_1 = nn.Linear(4096, hidden)
+        self.linear_2 = nn.Linear(hidden, 4096)
 
 
     def valid_length(self, length):
@@ -104,21 +99,24 @@ class GNNFaS(nn.Module):
 
         x, _, f_length = self.stft(x, t_length)
         # (B, T, C, F, 2)
-        # print('input  :', x.shape)
 
         r, i = x[..., 0], x[..., 1]
         # (B, T, C, F)
 
+        x = x.permute(0, 2, 4, 1, 3)
+        # (B, C, 2, T, F)
+
         frame = f_length[0]
-        x = x.view(B, frame, C, -1).transpose(1, 2)
         freq = x.shape[-1] 
-        # (B, C, T, 2F)
+        x = x.view(B*C, 2, frame, freq)
+        # (B*C, 2, T, F)
+        # print('input  :', x.shape)
 
         # padding
         valid_T = self.valid_length(frame)
         valid_F = self.valid_length(freq)
         x = F.pad(x, (0, valid_F - freq, 0, valid_T - frame))
-        # (B, C, valid_T, valid_F)
+        # (B*C, 2, valid_T, valid_F)
         # print('padded :', x.shape)
 
         # encoding
@@ -126,25 +124,23 @@ class GNNFaS(nn.Module):
         for encode in self.encoder:
             x = encode(x)
             skips.append(x)
-        # B, node, t, f
-        # print('encoded:', x.shape)
+        # B*C, filter[-1], t, f
 
         # GCN
-        _, node, t, f = x.shape
-        x = x.contiguous().view(B, node, -1)
-        # B, node, tf
-        if self.use_linear:
-            x = self.linear_1(x)
-            # B, node, hidden
+        _, h, t, f = x.shape
+        x = x.contiguous().view(B, C, -1)
+        # x = x.reshape(B, C, -1)
+        # B, C, 4096
+        x = self.linear_1(x)
+        # B, C, hidden
         gcn_out = self.gcn(x)
-        # B, node, hidden
+        # B, C, hidden
         x = x * gcn_out
-        # B, node, hidden
-        if self.use_linear:
-            x = self.linear_2(x)
-            # B, node, tf
-        x = x.view(B, node, t, f)
-        # B, node, t, f
+        # B, C, hidden
+        x = self.linear_2(x)
+        # B, C, 4096
+        x = x.view(B*C, h, t, f)
+        # B*C, filter[-1], t, f
         # print('gcn    :', x.shape)
 
         # decoding
@@ -153,19 +149,16 @@ class GNNFaS(nn.Module):
             # x = torch.cat((x, skip), dim=-1)
             x = x + skip
             x = decode(x)
-        # (B, C, valid_T, valid_F)
+        # B*C, 2, T, F
         # print('decoded:', x.shape)
 
-        # cutoff
-        x = x[:, :, :frame, :freq]
-        # B, C, T, F
         # attention mask
-        x = x.view(B, C, frame, freq//2, 2)
-        # B, C, T, F, 2
+        x = x.view(B, C, 2, valid_T, valid_F)
+        # B, C, 2, valid_T, valid_F
         mask = x.mean(dim=1)
-        # B, T, F, 2
-        r_mask = mask[..., 0]
-        i_mask = mask[..., 1]
+        # B, 2, valid_T, valid_F
+        r_mask = mask[:, 0, :frame, :freq]
+        i_mask = mask[:, 1, :frame, :freq]
         # B, T, F
 
         # reference channel = 0
@@ -178,7 +171,6 @@ class GNNFaS(nn.Module):
         # B, T, F
         out_spec = torch.stack([r_out_spec, i_out_spec], dim=-1)
         # B, T, F, 2
-
         x, _ = self.stft.inverse(out_spec, t_length)
         # B, L
 
@@ -194,7 +186,6 @@ class GNNFaS(nn.Module):
         loss_mag = torch.view_as_complex(clean_spec - enhanced_spec).abs().mean()
         loss_raw = (clean - enhanced_signal).abs().mean()
         loss_sisnr = self.si_snr_loss(enhanced_signal, clean)
-        loss_sisnr = 0 #self.si_snr_loss(enhanced_signal, clean)
         return loss_raw + loss_mag + loss_sisnr
 
 

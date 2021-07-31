@@ -14,6 +14,7 @@ class NoisyDataset(Dataset):
 
         # self.rir_path   = [os.path.join(f'../mixed/rir/{mode}', f) for f in os.listdir(f'../mixed/rir/{mode}')]
         self.rir_path   = [os.path.join(f'../mixed/rir/train', f) for f in os.listdir(f'../mixed/rir/train')]
+        self.rir_path   = list(sorted(self.rir_path))
         self.rir_path   = self.rir_path[:args.limit_rir]
 
         self.args = args
