@@ -51,7 +51,7 @@ class GNNFaS(nn.Module):
 
     def __init__(self, args, use_linear=True):
         super().__init__()
-        self.n_filters = [64, 128, 256, 128, 32]
+        self.n_filters = [32, 32, 32, 32, 32]
         self.kernel_size = 3
         self.stride = 2
         self.use_linear = use_linear

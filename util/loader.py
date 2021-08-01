@@ -9,10 +9,11 @@ import os
 class NoisyDataset(Dataset):
 
     def __init__(self, args, mode='train'):
-        self.clean_path = [os.path.join(f'../mixed/clean/{mode}', f) for f in os.listdir(f'../mixed/clean/{mode}')]
+        # self.clean_path = [os.path.join(f'../mixed/clean/{mode}', f) for f in os.listdir(f'../mixed/clean/{mode}')]
         # self.noise_path = [os.path.join(f'../mixed/noise/{mode}', f) for f in os.listdir(f'../mixed/noise/{mode}')]
         # self.rir_path   = [os.path.join(f'../mixed/rir/{mode}', f) for f in os.listdir(f'../mixed/rir/{mode}')]
 
+        self.clean_path = [os.path.join(f'../mixed/clean/train', f) for f in os.listdir(f'../mixed/clean/train')]
         self.noise_path = [os.path.join(f'../mixed/noise/train', f) for f in os.listdir(f'../mixed/noise/train')]
         self.noise_path = list(sorted(self.noise_path))
         self.rir_path   = [os.path.join(f'../mixed/rir/train', f) for f in os.listdir(f'../mixed/rir/train')]
@@ -54,6 +55,7 @@ def get_loader(args):
     train_dataset = NoisyDataset(args, mode='train')
     train_loader  = DataLoader(dataset=train_dataset, 
                                drop_last=True, 
+                               shuffle=args.shuffle,
                                collate_fn=collate_fn,
                                batch_size=args.batch_size,
                                num_workers=args.num_worker)
@@ -61,6 +63,7 @@ def get_loader(args):
     dev_dataset = NoisyDataset(args, mode='dev')
     dev_loader  = DataLoader(dataset=dev_dataset, 
                              drop_last=True, 
+                             shuffle=False,
                              collate_fn=collate_fn,
                              batch_size=args.batch_size,
                              num_workers=args.num_worker)
