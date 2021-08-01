@@ -77,7 +77,7 @@ class GNNFaS1(nn.Module):
 
             chin = n_filter
 
-        hidden = 512
+        hidden = 64
         self.gcn = GCN(hidden, hidden, args)
 
         self.linear_1 = nn.Linear(4096, hidden)

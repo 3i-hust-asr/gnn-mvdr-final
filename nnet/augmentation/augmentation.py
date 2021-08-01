@@ -27,7 +27,7 @@ class Augmentation(torch.nn.Module):
         # snr_range=[0,10], scale_range=[0.2,0.9]
         # snr = np.random.rand() * 10
         # snr = np.random.choice([-7.5, -5, 0, 5, 7.5])
-        snr = 0
+        snr = 5
         scale = 1
         
         inputs, clean_reverbs, noise_reverbs = mix(clean_reverbs, noise_reverbs, args, snr=snr, scale=scale)

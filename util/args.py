@@ -23,7 +23,7 @@ def get_args():
     parser.add_argument('--evaluate', action='store_true')
     parser.add_argument('--eval_iter', type=int, default=5)
     parser.add_argument('--optimizer', type=str, default='adamw')
-    parser.add_argument('--learning_rate', type=float, default=1e-4)
+    parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--shuffle', action='store_true')
     parser.add_argument('--clip_grad_norm', type=float, default=1.0)
     parser.add_argument('--pretrain_path', type=str, required=False)
