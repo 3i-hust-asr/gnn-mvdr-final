@@ -115,7 +115,6 @@ class Trainer:
     def write_dev_metric_to_tensorboard(self, epoch, metrics):
         # compute average
         for key in metrics:
-            print(key)
             metrics[key] = np.mean(metrics[key])
         # display
         print('Evaluate epoch:{}: si_snr={:0.2f} pesq={:0.2f},  stoi={:0.2f}, estoi={:0.2f}' \
@@ -183,7 +182,6 @@ class Trainer:
                         for key in batch_metrics:
                             if key not in metrics.keys():
                                 metrics[key] = []
-                        print(metrics)
                         for key in batch_metrics:
                             metrics[key] += batch_metrics[key].tolist()
                         pbar.set_postfix(si_snr=np.mean(metrics['dev:si_snr:enhanced']))
