@@ -11,13 +11,14 @@ class NoisyDataset(Dataset):
     def __init__(self, args, mode='train'):
         self.clean_path = [os.path.join(f'../mixed/clean/{mode}', f) for f in os.listdir(f'../mixed/clean/{mode}')]
         self.noise_path = [os.path.join(f'../mixed/noise/{mode}', f) for f in os.listdir(f'../mixed/noise/{mode}')]
-        self.rir_path   = [os.path.join(f'../mixed/rir/{mode}', f) for f in os.listdir(f'../mixed/rir/{mode}')]
+        # self.rir_path   = [os.path.join(f'../mixed/rir/{mode}', f) for f in os.listdir(f'../mixed/rir/{mode}')]
+
         # self.clean_path = [os.path.join(f'../mixed/clean/train', f) for f in os.listdir(f'../mixed/clean/train')]
         # self.noise_path = [os.path.join(f'../mixed/noise/train', f) for f in os.listdir(f'../mixed/noise/train')]
         # self.noise_path = list(sorted(self.noise_path))
-        # self.rir_path   = [os.path.join(f'../mixed/rir/train', f) for f in os.listdir(f'../mixed/rir/train')]
-        # self.rir_path   = list(sorted(self.rir_path))
-        # self.rir_path   = self.rir_path[:args.limit_rir]
+        self.rir_path   = [os.path.join(f'../mixed/rir/train', f) for f in os.listdir(f'../mixed/rir/train')]
+        self.rir_path   = list(sorted(self.rir_path))
+        self.rir_path   = self.rir_path[:args.limit_rir]
         self.args = args
         self.mode = mode
 
