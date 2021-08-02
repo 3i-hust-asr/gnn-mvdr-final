@@ -197,15 +197,15 @@ def split_clean_data(clean_list, args):
 def split_noise_data(noise_list, args):
     # Training set
     # 3 rooms
-    end = args.num_train // 3
+    end = args.num_train ** 2
     train_lines = noise_list[:end]
 
     start = end
-    end = start + args.num_dev // 2
+    end = start + args.num_dev ** 2
     dev_lines   = noise_list[start: end]
 
     start = end
-    end = start + args.num_dev // 2    
+    end = start + args.num_test ** 2
     test_lines = noise_list[start: end]
 
     config = {
