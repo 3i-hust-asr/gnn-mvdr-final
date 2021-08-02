@@ -115,11 +115,12 @@ class Trainer:
     def write_dev_metric_to_tensorboard(self, epoch, metrics):
         # compute average
         for key in metrics:
+            print(key)
             metrics[key] = np.mean(metrics[key])
         # display
         print('Evaluate epoch:{}: si_snr={:0.2f} pesq={:0.2f},  stoi={:0.2f}, estoi={:0.2f}' \
-            .format(epoch, metrics['si_snr:enhanced'], metrics['pesq:enhanced'],
-                           metrics['stoi:enhanced'], metrics['estoi:enhanced']))
+            .format(epoch, metrics['dev:si_snr:enhanced'], metrics['dev:pesq:enhanced'],
+                           metrics['dev:stoi:enhanced'], metrics['dev:estoi:enhanced']))
         # write to tensorboard
         self.writer.add_scalars('validation metric', metrics, epoch)
 
@@ -171,34 +172,34 @@ class Trainer:
             # evalute
             if self.args.evaluate and (epoch % self.args.eval_iter == 0):
                 self.model.eval()
+                all_metrics = {}
                 with tqdm.tqdm(self.dev_loader, unit="it") as pbar:
                     pbar.set_description(f'Evaluate epoch - dev {epoch}')
-                    metrics = None
+                    metrics = {}
                     for batch_idx, batch in enumerate(pbar):
                         # validate
                         batch_metrics = self.validation_step(batch, batch_idx, mode='dev')
                         # accumulate valilation metrics
-                        if metrics is None:
-                            metrics = {}
-                            for key in batch_metrics:
+                        for key in batch_metrics:
+                            if key not in metrics.keys():
                                 metrics[key] = []
+                        print(metrics)
                         for key in batch_metrics:
                             metrics[key] += batch_metrics[key].tolist()
                         pbar.set_postfix(si_snr=np.mean(metrics['dev:si_snr:enhanced']))
                         # limit train batch hook
                         if self.limit_val_batch_hook(batch_idx):
                             break
+                all_metrics.update(metrics)
 
                 with tqdm.tqdm(self.train_loader, unit="it") as pbar:
                     pbar.set_description(f'Evaluate epoch - train {epoch}')
-                    metrics = None
                     for batch_idx, batch in enumerate(pbar):
                         # validate
                         batch_metrics = self.validation_step(batch, batch_idx, mode='train')
                         # accumulate valilation metrics
-                        if metrics is None:
-                            metrics = {}
-                            for key in batch_metrics:
+                        for key in batch_metrics:
+                            if key not in metrics.keys():
                                 metrics[key] = []
                         for key in batch_metrics:
                             metrics[key] += batch_metrics[key].tolist()
@@ -206,6 +207,7 @@ class Trainer:
                         # limit train batch hook
                         if self.limit_val_batch_hook(batch_idx):
                             break
+                all_metrics.update(metrics)
 
                 # print epoch summary
                 self.write_dev_metric_to_tensorboard(epoch, metrics)
