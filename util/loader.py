@@ -22,7 +22,7 @@ class NoisyDataset(Dataset):
         self.mode = mode
 
     def __len__(self):
-        return len(self.clean_path)
+        return len(self.noise_path)
 
     def __getitem__(self, idx):
         clean_idx = idx % len(self.clean_path)
