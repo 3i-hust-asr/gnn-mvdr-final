@@ -12,9 +12,9 @@ def get_args():
     parser.add_argument('--num_worker', type=int, default=os.cpu_count())
     parser.add_argument('--batch_size', type=int, default=15)
 
-    parser.add_argument('--num_train', type=int, default=3600)
-    parser.add_argument('--num_dev', type=int, default=3000)
-    parser.add_argument('--num_test', type=int, default=3000)
+    parser.add_argument('--num_train', type=int, default=70000)
+    parser.add_argument('--num_dev', type=int, default=10000)
+    parser.add_argument('--num_test', type=int, default=10000)
     parser.add_argument('--data_dir', type=str, default='../../dataset')
     parser.add_argument('--limit_rir', type=int, default=6)
 
