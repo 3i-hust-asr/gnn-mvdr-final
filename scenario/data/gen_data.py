@@ -25,10 +25,13 @@ def gen_data(args):
         print(f'[+] mode={mode}, name=clean')
         folder = create_mixed_folder(mode, 'clean')
         def f(i, line):
-            path, start = line
-            x = clip_data(get_firstchannel_read(path), start, 6 * 16000)
-            path = os.path.join(folder, f'{i}.npz')
-            np.savez_compressed(path, x=x)
+            try:
+                path, start = line
+                x = clip_data(get_firstchannel_read(path), start, 6 * 16000)
+                path = os.path.join(folder, f'{i}.npz')
+                np.savez_compressed(path, x=x)
+            except:
+                pass
         Parallel(n_jobs=os.cpu_count())(
             delayed(f)(i, line) for i, line in enumerate(config['clean'][mode]))
 
