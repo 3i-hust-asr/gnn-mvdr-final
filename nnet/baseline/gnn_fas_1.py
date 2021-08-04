@@ -51,7 +51,7 @@ class GNNFaS1(nn.Module):
 
     def __init__(self, args):
         super().__init__()
-        self.n_filters = [32, 32, 32, 32, 32]
+        self.n_filters = [32, 64, 128, 64, 32]
         self.kernel_size = 3
         self.stride = 2
 
@@ -78,7 +78,8 @@ class GNNFaS1(nn.Module):
             chin = n_filter
 
         hidden = 64
-        self.gcn = GCN(hidden, hidden, args)
+        self.gcn_1 = GCN(hidden, hidden, args)
+        self.gcn_2 = GCN(hidden, hidden, args)
 
         self.linear_1 = nn.Linear(2560, hidden)
         self.linear_2 = nn.Linear(hidden, 2560)
@@ -133,9 +134,10 @@ class GNNFaS1(nn.Module):
         # B, C, 4096
         x = self.linear_1(x)
         # B, C, hidden
-        gcn_out = self.gcn(x)
+        gcn_1_out = self.gcn_1(x)
+        gcn_2_out = self.gcn_2(gcn_1_out)
         # B, C, hidden
-        x = x * gcn_out
+        x = x * gcn_2_out
         # B, C, hidden
         x = self.linear_2(x)
         # B, C, 4096

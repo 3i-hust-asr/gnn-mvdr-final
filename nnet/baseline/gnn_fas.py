@@ -51,7 +51,7 @@ class GNNFaS(nn.Module):
 
     def __init__(self, args, use_linear=True):
         super().__init__()
-        self.n_filters = [32, 32, 32, 32, 32]
+        self.n_filters = [32, 64, 128, 64, 32]
         self.kernel_size = 3
         self.stride = 2
         self.use_linear = use_linear
@@ -79,15 +79,18 @@ class GNNFaS(nn.Module):
             chin = n_filter
 
         linear_hidden = 160
-        gcn_hidden = 32
+        gcn_hidden = 64
 
         if self.use_linear:
             self.linear_1 = nn.Linear(linear_hidden, gcn_hidden)
-            self.gcn = GCN(gcn_hidden, gcn_hidden, args)
+            # self.gcn = GCN(gcn_hidden, gcn_hidden, args)
+            self.gcn_1 = GCN(gcn_hidden, gcn_hidden, args)
+            self.gcn_2 = GCN(gcn_hidden, gcn_hidden, args)
             self.linear_2 = nn.Linear(gcn_hidden, linear_hidden)
         else:
-            self.gcn = GCN(linear_hidden, linear_hidden, args)
-
+            # self.gcn = GCN(linear_hidden, linear_hidden, args)
+            self.gcn_1 = GCN(linear_hidden, linear_hidden, args)
+            self.gcn_2 = GCN(linear_hidden, linear_hidden, args)
 
     def valid_length(self, length):
         for idx in range(len(self.n_filters)):
@@ -136,9 +139,11 @@ class GNNFaS(nn.Module):
         if self.use_linear:
             x = self.linear_1(x)
             # B, node, hidden
-        gcn_out = self.gcn(x)
-        # B, node, hidden
-        x = x * gcn_out
+        # B, C, hidden
+        gcn_1_out = self.gcn_1(x)
+        gcn_2_out = self.gcn_2(gcn_1_out)
+        # B, C, hidden
+        x = x * gcn_2_out
         # B, node, hidden
         if self.use_linear:
             x = self.linear_2(x)

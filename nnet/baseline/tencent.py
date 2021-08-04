@@ -13,7 +13,7 @@ class Tencent(nn.Module):
                  win_inc=160,
                  win_type='hann',
                  rnn_units=128,
-                 rnn_layers=1,
+                 rnn_layers=2,
                  bidirectional=False,
                  ipd_index='0,4;1,5;2,6;3,7',
                  cos=True,
