@@ -166,7 +166,9 @@ class Trainer:
                     if self.iteration % self.args.log_iter == 0:
                         self.write_train_metric_to_tensorboard(loss_dicts)
                         loss_dicts = None
-
+            # save checkpoint
+            self.save_checkpoint()
+            
             ##########################################################################################
             # evalute
             if self.args.evaluate and (epoch % self.args.eval_iter == 0):

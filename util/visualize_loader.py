@@ -19,6 +19,7 @@ class NoisyDataset(Dataset):
         self.rir_path   = [os.path.join(f'../mixed/rir/train', f) for f in os.listdir(f'../mixed/rir/train')]
         self.rir_path   = list(sorted(self.rir_path))
         self.rir_path   = self.rir_path[:args.limit_rir]
+        
         self.args = args
         self.mode = mode
 
@@ -28,6 +29,7 @@ class NoisyDataset(Dataset):
     def __getitem__(self, idx):
         while 1:
             try:
+
                 clean_idx = idx % len(self.clean_path)
                 noise_idx = idx % len(self.noise_path)
                 rir_idx = idx % len(self.rir_path)
@@ -43,20 +45,20 @@ class NoisyDataset(Dataset):
 
                 # rir
                 rir   = torch.tensor(np.load(self.rir_path[rir_idx])['x'], dtype=torch.float32)
-            except: 
+            except:
                 idx += 1
             else:
                 break
+        return clean, noise, rir, rir_idx
 
-        return clean, noise, rir
-
-def get_loader(args):
+def get_visualize_loader(args):
 
     def collate_fn(batch):
         clean = torch.stack([item[0] for item in batch])
         noise = torch.stack([item[1] for item in batch])
         rir = [item[2] for item in batch]
-        return clean, noise, rir
+        rir_idx = torch.tensor([item[3] for item in batch])
+        return clean, noise, rir, rir_idx
 
     train_dataset = NoisyDataset(args, mode='train')
     train_loader  = DataLoader(dataset=train_dataset, 

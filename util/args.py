@@ -9,7 +9,7 @@ def get_args():
 
     parser.add_argument('--scenario', type=str, default='train')
 
-    parser.add_argument('--num_worker', type=int, default=os.cpu_count())
+    parser.add_argument('--num_worker', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=15)
 
     parser.add_argument('--num_train', type=int, default=70000)
@@ -27,7 +27,7 @@ def get_args():
     parser.add_argument('--shuffle', action='store_true')
     parser.add_argument('--clip_grad_norm', type=float, default=1.0)
     parser.add_argument('--pretrain_path', type=str, required=False)
-    parser.add_argument('--num_epoch', type=int, default=100)
+    parser.add_argument('--num_epoch', type=int, default=200)
     parser.add_argument('--limit_train_batch', type=int, default=-1)
     parser.add_argument('--limit_val_batch', type=int, default=30)
     parser.add_argument('--log_iter', type=int, default=10)

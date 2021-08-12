@@ -192,6 +192,58 @@ class GNNFaS(nn.Module):
 
         return x
 
+    def encode(self, x, return_spec=False):
+        # (B, L, C)
+        B, L, C = x.shape
+        t_length = torch.ones(B).int().fill_(L)
+
+        x, _, f_length = self.stft(x, t_length)
+        # (B, T, C, F, 2)
+        # print('input  :', x.shape)
+
+        r, i = x[..., 0], x[..., 1]
+        # (B, T, C, F)
+
+        frame = f_length[0]
+        x = x.view(B, frame, C, -1).transpose(1, 2)
+        freq = x.shape[-1] 
+        # (B, C, T, 2F)
+
+        # padding
+        valid_T = self.valid_length(frame)
+        valid_F = self.valid_length(freq)
+        x = F.pad(x, (0, valid_F - freq, 0, valid_T - frame))
+        # (B, C, valid_T, valid_F)
+        # print('padded :', x.shape)
+
+        # encoding
+        skips = []
+        for encode in self.encoder:
+            x = encode(x)
+            skips.append(x)
+        # B, node, t, f
+        # print('encoded:', x.shape)
+
+        # GCN
+        _, node, t, f = x.shape
+        x = x.contiguous().view(B, node, -1)
+        # B, node, tf
+        if self.use_linear:
+            x = self.linear_1(x)
+            # B, node, hidden
+        # B, C, hidden
+        gcn_1_out = self.gcn_1(x)
+        gcn_2_out = self.gcn_2(gcn_1_out)
+        # B, C, hidden
+        x = x * gcn_2_out
+        # B, node, hidden
+        if self.use_linear:
+            x = self.linear_2(x)
+            # B, node, tf
+        # x = x.view(B, node, t, f)
+        # B, node, t, f
+        # print('gcn    :', x.shape)
+        return x
 
     def compute_loss(self, mix, clean):
         enhanced_signal, enhanced_spec = self(mix, return_spec=True)

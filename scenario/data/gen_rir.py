@@ -59,9 +59,9 @@ def gen_rir(args):
     modes = ['train', 'dev', 'test']
 
     num_sample = {
-        'train': 6,
-        'dev'  : 6,
-        'test' : 6,
+        'train': 1000,
+        'dev'  : 1000,
+        'test' : 1000,
     }
 
     # generate rirs
