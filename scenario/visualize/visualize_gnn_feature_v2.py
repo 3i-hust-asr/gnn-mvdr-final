@@ -4,7 +4,21 @@ import os
 
 def visualize_gnn_feature_v2(args):
     # load data
-    folder = '../gnn_feature'
+    modes = [
+        'train_z_in',
+        'train_z_out',
+        'pretrain_z_in',
+        'pretrain_z_out',
+        'train_2_z_in',
+        'train_2_z_out',
+        'clean_reverb_z_in',
+        'clean_reverb_z_out',
+        'noise_reverb_z_in',
+        'noise_reverb_z_out',
+    ]
+    mode = modes[9]
+
+    folder = f'../feature/{mode}'
     X = []
     Y = []
     for name in os.listdir(folder):
@@ -20,10 +34,11 @@ def visualize_gnn_feature_v2(args):
     # plt.scatter(X_embedded[:, 0], X_embedded[:, 1], c=Y)
     # plt.show()
 
-    X_embedded = np.load('X_embedded_3d.npy')
+    X_embedded = np.load(f'../embedded/{mode}_3d.npy')
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
 
     ax.scatter(X_embedded[:, 0], X_embedded[:, 1], X_embedded[:, 2], c=Y)
+    plt.title(mode)
     plt.show()

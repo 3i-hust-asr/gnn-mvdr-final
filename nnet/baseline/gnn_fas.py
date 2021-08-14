@@ -231,6 +231,7 @@ class GNNFaS(nn.Module):
         if self.use_linear:
             x = self.linear_1(x)
             # B, node, hidden
+        z_in = x.clone()
         # B, C, hidden
         gcn_1_out = self.gcn_1(x)
         gcn_2_out = self.gcn_2(gcn_1_out)
@@ -240,10 +241,11 @@ class GNNFaS(nn.Module):
         if self.use_linear:
             x = self.linear_2(x)
             # B, node, tf
-        # x = x.view(B, node, t, f)
-        # B, node, t, f
+        x = x.view(B, node, t, f)
+        # sB, node, t, f
+        z_out = x.clone()
         # print('gcn    :', x.shape)
-        return x
+        return z_in, z_out
 
     def compute_loss(self, mix, clean):
         enhanced_signal, enhanced_spec = self(mix, return_spec=True)

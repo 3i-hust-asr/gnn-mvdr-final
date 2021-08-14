@@ -6,7 +6,16 @@ import os
 
 def visualize_gnn_feature(args):
     # load data
-    folder = '../gnn_feature'
+    # mode = 'noise_reverb_2_z_in'
+    # mode = 'noise_reverb_2_z_out'
+    # mode = 'noise_reverb_z_in'
+    # mode = 'noise_reverb_z_out'
+    # mode = 'clean_reverb_z_out'
+    # mode = 'clean_reverb_z_in'
+    # mode = 'train_2_z_out'
+    mode = 'train_2_z_in'
+    
+    folder = f'../feature/{mode}/'
     X = []
     Y = []
     for name in os.listdir(folder):
@@ -17,6 +26,11 @@ def visualize_gnn_feature(args):
     X = np.array(X)
     Y = np.array(Y)
     X_embedded = TSNE(n_components=3).fit_transform(X)
-    np.save('X_embedded_3d.npy', X_embedded)
-    plt.scatter(X_embedded[:, 0], X_embedded[:, 1])
+    np.save(f'../embedded/{mode}_3d.npy', X_embedded)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+
+    ax.scatter(X_embedded[:, 0], X_embedded[:, 1], X_embedded[:, 2], c=Y)
+    plt.title(mode)
     plt.show()
