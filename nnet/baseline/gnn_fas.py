@@ -20,7 +20,7 @@ class GCN(nn.Module):
         else:
             self.register_parameter('bias', None)
 
-    def forward(self, x):
+    def forward(self, x, return_adj=False):
         B, N, F = x.shape
         # construct adjacency matrix
         adj = torch.zeros((B, N, N, 2 * F), device=x.device)
@@ -44,6 +44,8 @@ class GCN(nn.Module):
             out = out + self.bias
         # activation
         out = out.relu()
+        if return_adj:
+            return out, adj
         return out
 
 
@@ -192,7 +194,52 @@ class GNNFaS(nn.Module):
 
         return x
 
-    def encode(self, x, return_spec=False):
+    def forward_adj(self, x):
+        # (B, L, C)
+        B, L, C = x.shape
+        t_length = torch.ones(B).int().fill_(L)
+
+        x, _, f_length = self.stft(x, t_length)
+        # (B, T, C, F, 2)
+        # print('input  :', x.shape)
+
+        r, i = x[..., 0], x[..., 1]
+        # (B, T, C, F)
+
+        frame = f_length[0]
+        x = x.view(B, frame, C, -1).transpose(1, 2)
+        freq = x.shape[-1] 
+        # (B, C, T, 2F)
+
+        # padding
+        valid_T = self.valid_length(frame)
+        valid_F = self.valid_length(freq)
+        x = F.pad(x, (0, valid_F - freq, 0, valid_T - frame))
+        # (B, C, valid_T, valid_F)
+        # print('padded :', x.shape)
+
+        # encoding
+        skips = []
+        for encode in self.encoder:
+            x = encode(x)
+            skips.append(x)
+        # B, node, t, f
+        # print('encoded:', x.shape)
+
+        # GCN
+        _, node, t, f = x.shape
+        x = x.contiguous().view(B, node, -1)
+        # B, node, tf
+        if self.use_linear:
+            x = self.linear_1(x)
+            # B, node, hidden
+
+        gcn_1_out, gcn_1_adj = self.gcn_1(x, return_adj=True)
+        gcn_2_out, gcn_2_adj = self.gcn_2(gcn_1_out, return_adj=True)
+
+        return gcn_1_adj, gcn_2_adj
+
+    def encode(self, x):
         # (B, L, C)
         B, L, C = x.shape
         t_length = torch.ones(B).int().fill_(L)
