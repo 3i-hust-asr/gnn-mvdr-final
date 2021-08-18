@@ -7,7 +7,7 @@ import os
 def visualize_gnn_adj(args):
     # load data
     mode = 'gcn_2_adj'
-    dimension = 2
+    dimension = 3
     colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
     
     os.makedirs('../embedded', exist_ok=True)

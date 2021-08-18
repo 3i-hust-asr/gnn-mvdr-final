@@ -16,9 +16,9 @@ def visualize_gnn_feature_v2(args):
         'noise_reverb_z_in',
         'noise_reverb_z_out',
     ]
-    mode = modes[9]
+    mode = modes[0]
 
-    folder = f'../feature/{mode}'
+    folder = f'../feature-v2/feature/{mode}'
     X = []
     Y = []
     for name in os.listdir(folder):
@@ -34,7 +34,7 @@ def visualize_gnn_feature_v2(args):
     # plt.scatter(X_embedded[:, 0], X_embedded[:, 1], c=Y)
     # plt.show()
 
-    X_embedded = np.load(f'../embedded/{mode}_3d.npy')
+    X_embedded = np.load(f'../feature-v2/embedded/{mode}_3d.npy')
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')

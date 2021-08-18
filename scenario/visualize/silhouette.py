@@ -18,16 +18,18 @@ def load(mode):
 
 def silhouette(args):
     modes = [
-        'train_z_in',
-        'train_z_out',
-        'pretrain_z_in',
-        'pretrain_z_out',
-        'train_2_z_in',
-        'train_2_z_out',
-        'noise_reverb_z_in',
-        'noise_reverb_z_out',
-        'clean_reverb_z_in',
-        'clean_reverb_z_out',
+        # 'train_z_in',
+        # 'train_z_out',
+        # 'pretrain_z_in',
+        # 'pretrain_z_out',
+        # 'train_2_z_in',
+        # 'train_2_z_out',
+        # 'noise_reverb_z_in',
+        # 'noise_reverb_z_out',
+        # 'clean_reverb_z_in',
+        # 'clean_reverb_z_out',
+        'gcn_1_adj',
+        'gcn_2_adj'
     ]
     for mode in modes:
         X, X_embedded, Y = load(mode)
