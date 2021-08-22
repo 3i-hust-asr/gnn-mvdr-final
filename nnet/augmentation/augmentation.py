@@ -25,10 +25,8 @@ class Augmentation(torch.nn.Module):
         noise_reverbs = torch.stack([conv1d(noises[i], noise_rirs[i]) for i in range(batch_size)])
         # mix
         # snr_range=[0,10], scale_range=[0.2,0.9]
-        # snr = np.random.rand() * 10
-        snr = np.random.choice([-7.5, -5, 0, 5, 7.5])
-        # snr = 5
-        scale = 1
+        scale = np.random.rand() * 0.7 + 0.2
+        snr   = np.random.rand() * 10
         
         inputs, clean_reverbs, noise_reverbs = mix(clean_reverbs, noise_reverbs, args, snr=snr, scale=scale)
 
