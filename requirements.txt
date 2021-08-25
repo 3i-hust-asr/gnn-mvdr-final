@@ -1,6 +1,7 @@
 rir-generator==0.1.0
 torch_complex
 pystoi
+pesq
 soundfile
 librosa
 numpy
