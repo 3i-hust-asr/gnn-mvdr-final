@@ -211,5 +211,6 @@ def gen_data_(args, type='train'):
         fp.write('\n'.join(rir_list))
 
 def gen_data(args):
-    args.num_sample = 5000
+    # args.num_sample = 5000
     gen_data_(args, type='train')
+    gen_data_(args, type='dev')
