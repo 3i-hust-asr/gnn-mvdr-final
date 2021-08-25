@@ -233,6 +233,13 @@ class Trainer:
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             }, self.get_checkpoint_path())
+        # save checkpoint for each epoch
+        torch.save({
+            'iteration': self.iteration,
+            'epoch': self.epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            }, self.get_checkpoint_path().replace('.ckpt', f'_epoch_{self.epoch}.ckpt'))
         print('[+] checkpoint saved')
 
 def train(args):

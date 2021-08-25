@@ -7,7 +7,8 @@ def get_args():
     
     parser.add_argument('--seed', type=int, default=0)
 
-    parser.add_argument('--scenario', type=str, default='train')
+    parser.add_argument('--scenario', type=str, default='test_model')
+    parser.add_argument('--model', type=str, default='mvdr')
 
     parser.add_argument('--num_worker', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=15)
@@ -17,8 +18,6 @@ def get_args():
     parser.add_argument('--num_test', type=int, default=10000)
     parser.add_argument('--data_dir', type=str, default='../../dataset')
     parser.add_argument('--limit_rir', type=int, default=6)
-
-    parser.add_argument('--model', type=str, default='baseline')
 
     parser.add_argument('--evaluate', action='store_true')
     parser.add_argument('--eval_iter', type=int, default=5)
