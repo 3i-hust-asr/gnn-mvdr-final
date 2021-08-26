@@ -12,8 +12,8 @@ import os
 #############################################################################
 # CLEAN
 #############################################################################
-def get_selected_list(clean, args, type='train'):
-    folder = f'data/selected_lists/{type}'
+def get_selected_list(clean, args, mode='train'):
+    folder = f'data/selected_lists/{mode}'
     path = os.path.join(folder, '{}.name'.format(clean))
     ls = open(path).read().strip().split('\n')
     return ls
@@ -37,10 +37,10 @@ def _get_wav_in_data_dir(clean, args):
         pass
     return [path for path in recursive_walk(folder) if (path.endswith('.wav') or path.endswith('.flac'))]
 
-def get_wav_in_data_dir(clean, args, type='train'):
-    if type == 'train':
+def get_wav_in_data_dir(clean, args, mode='train'):
+    if mode == 'train':
         return _get_wav_in_data_dir(clean, args)
-    elif type == 'dev':
+    elif mode == 'dev':
         items = []
         if clean == 'clean':
             for clean in ['aishell_1', 'librispeech_360', 'aishell_3']:
@@ -55,35 +55,34 @@ def get_wav_in_data_dir(clean, args, type='train'):
     return items
 
 def load(name):
-    folder = '../tmp'
-    path = os.path.join(folder, name)
+    path = os.path.join('../tmp', name)
     if os.path.exists(path):
         return open(path).read().strip().split('\n')
+    return None
 
 def save(items, name):
     folder = '../tmp'
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
     path = os.path.join(folder, name)
     with open(path, 'w') as fp:
         fp.write('\n'.join(items))
 
-def get_wav_list(clean, args, type='train'):
-    final_wav_list = load('{}_{}'.format(clean, type))
+def get_wav_list(clean, args, mode='train'):
+    final_wav_list = load('{}_{}'.format(clean, mode))
     if final_wav_list is not None:
-        print('\n[+] train clean {} loaded'.format(clean))
+        print('\n[+] {} {} loaded'.format(mode, clean))
         return final_wav_list
     else:
-        print('\n[+] generating new wav list {}'.format(clean))
+        print('\n[+] generating new wav list: {} {}'.format(mode, clean))
         # get train wav
-        selected_list = get_selected_list(clean, args, type=type)
-        wav_list = get_wav_in_data_dir(clean, args, type=type)
+        selected_list = get_selected_list(clean, args, mode=mode)
+        wav_list = get_wav_in_data_dir(clean, args, mode=mode)
 
         final_wav_list = []
         for path in tqdm(wav_list):
             if os.path.basename(path) in selected_list:
                 final_wav_list.append(path)
-        save(final_wav_list, '{}_{}'.format(clean, type))
+        save(final_wav_list, '{}_{}'.format(clean, mode))
     return final_wav_list
 
 ##############################################################
@@ -135,82 +134,78 @@ def get_snr(snr_range=[0, 8]):
 def get_scale(scale_range=[0.2, 0.9]):
     return np.random.uniform(*scale_range)
 
-def save_train_config_full(items, args, name='train'):
-    if not os.path.exists('../config'):
-        os.mkdir('../config')
-    path = '../config/{}.list'.format(name)
+def save_config_full(items, args, mode='train'):
+    path = f'../config/{mode}/clean.list'.format(name)
     with open(path, 'a') as fp:
         fp.write('\n'.join(items))
         fp.write('\n')
 ##############################################################
 
-def get_train_clean_list(args, type='train'):
-    if type == 'train':
+def get_clean_list(args, mode='train'):
+    if mode == 'train':
         cleans = ['aishell_1', 'librispeech_360', 'aishell_3']
-    elif type == 'dev':
+    elif mode == 'dev':
         cleans = ['clean']
 
     # generating all clean list
-    train_clean = []
+    clean_list = []
     for clean in cleans:
-        ls = get_wav_list(clean, args, type=type)
-        train_clean += ls
-        print('[+] getting clean wav list #{}={}, #total={} type={}'.format(clean, len(ls), len(train_clean), type))
+        ls = get_wav_list(clean, args, mode=mode)
+        clean_list += ls
+        print('[+] getting clean wav list #{}={}, #total={} mode={}'.format(clean, len(ls), len(clean_list), mode))
 
-    if not os.path.exists(f'../config/{type}.list'):
-        def f(train_path):
+    if not os.path.exists(f'../config/{mode}.list'):
+        def f(path):
             Fields = []
-            for start_time in get_start_time(train_path, 6 * 16000):
-                fields = [train_path, start_time]
+            for start_time in get_start_time(path, 6 * 16000):
+                fields = [path, start_time]
                 fields = [str(_) for _ in fields]
                 Fields.append(fields)
             return [' '.join(fields) for fields in Fields]
 
-        print(f'[+] generate config lines parallely type={type}')
+        print(f'[+] generate config lines parallely mode={mode}')
         step = 12800
-        for i in tqdm(range(0, len(train_clean), step)):
-            tmp_paths = train_clean[i: i + step]
+        for i in tqdm(range(0, len(clean_list), step)):
+            tmp_paths = clean_list[i: i + step]
             #     
             Lines = Parallel(n_jobs=os.cpu_count())(delayed(f)(tp) for tp in tmp_paths)
             final_lines = []
             for lines in Lines:
                 final_lines += lines
             # save data
-            save_train_config_full(final_lines, args, name=f'{type}')
+            save_config_full(final_lines, args, mode)
 
-    lines = [line.split(' ') for line in open(f'../config/{type}.list').read().strip().split('\n')]
-    print('\n[+] train list loaded, #examples={} type={}'.format(len(lines), type))
-    return lines
-
-def get_train_noise_list(noise, args, type='train'):
-    train_noise = get_wav_list(noise, args, type=type)
-    print('[+] getting noise wav list #{}={}'.format(noise, len(train_noise)))
-    return train_noise
-
-def get_train_rir_list(rir, args):
-    train_rir = get_wav_list(rir, args)
-    print('[+] getting rir wav list #{}={}'.format(rir, len(train_rir)))
-    return train_rir
-
-def gen_data_(args, type='train'):
-    noises = ['musan_noise', 'musan_music', 'audioset']
-    rirs = ['linear', 'circle', 'non_uniform']
-    clean_start_list = get_train_clean_list(args)
-
+def get_noise_list(args, mode='train'):
+    if mode == 'train':
+        noises = ['musan_noise', 'musan_music', 'audioset']
+    elif mode == 'dev':
+        noises = ['noise']
     noise_list = []
-    rir_list = []
     for noise in noises:
-        for rir in rirs:
-            noise_list += get_train_noise_list(noise, args)
-            rir_list   += get_train_rir_list(rir, args)
-    path = os.path.join('../config/noise.list')
+        noise_list += get_wav_list(noise, args, mode=mode)
+        print('[+] getting noise wav list {} #{}={}'.format(mode, noise, len(noise_list)))
+
+    path = os.path.join(f'../config/{mode}/noise.list')
     with open(path, 'w') as fp:
         fp.write('\n'.join(noise_list))
-    path = os.path.join('../config/rir.list')
+
+def get_rir_list(args, mode='train'):
+    rirs = ['linear', 'circle', 'non_uniform']
+    rir_list = []
+    for rir in rirs:
+        rir_list += get_wav_list(rir, args, mode=mode)
+    print('[+] getting rir wav list {} #{}={}'.format(mode, rir, len(rir_list)))
+
+    path = os.path.join(f'../config/{mode}/rir.list')
     with open(path, 'w') as fp:
         fp.write('\n'.join(rir_list))
 
+def gen_data_(args, mode='train'):
+    get_clean_list(args, mode)
+    get_rir_list(args, mode)
+    get_noise_list(args, mode)
+
 def gen_data(args):
-    # args.num_sample = 5000
-    gen_data_(args, type='train')
-    gen_data_(args, type='dev')
+    for mode in ['dev', 'train']:
+        os.makedirs(f'../config/{mode}', exist_ok=True)
+        gen_data_(args, mode)

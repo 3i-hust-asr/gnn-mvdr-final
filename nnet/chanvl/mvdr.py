@@ -8,6 +8,27 @@ import torch
 from ..common import Stft
 from .util import *
 
+class MaskLstm(torch.nn.Module):
+
+    def __init__(self, input_size, hidden_size, bidirectional):
+        super(MaskLstm, self).__init__()
+        self.module = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=2, bidirectional=bidirectional, batch_first=True)
+
+    def forward(self, x):
+        # (Batch, Channel, Frame, Frequency*2)
+        x  = x.view(-1, x.shape[2], x.shape[3])
+        # (Batch*Channel, Frame, Frequency*2)
+        x, _ = self.module(x)
+        # (Batch*Channel, Frame, Hidden)
+        return x
+
+class MaskGNN(torch.nn.Module):
+
+    def __init__(self):
+        super(MaskGNN, self).__init__()
+
+
+
 class Mvdr(torch.nn.Module):
 
     def __init__(self):
@@ -20,12 +41,13 @@ class Mvdr(torch.nn.Module):
         num_bins = fft_len // 2 + 1
 
         self.stft = Stft(n_fft=fft_len, win_length=320, hop_length=160, window='hann')
-        self.lstm = nn.LSTM(input_size=num_bins*2, hidden_size=rnn_units, num_layers=2, bidirectional=bidirectional, batch_first=True)
+        self.mask_gen = MaskLstm(input_size=num_bins*2, hidden_size=rnn_units, bidirectional=bidirectional)
 
         fac = 2 if bidirectional else 1
         self.linears = torch.nn.ModuleList([torch.nn.Linear(rnn_units * fac, num_bins * 2) for _ in range(2)])
 
         self.ref_channel = 0
+
 
     def forward(self, x, return_spec=False):
         # (Batch, Sample, Channel)
@@ -42,11 +64,9 @@ class Mvdr(torch.nn.Module):
         # (Batch, Channel, Frame, Frequency)
         x = torch.cat([r_spec, i_spec], dim=-1)
         # (Batch, Channel, Frame, Frequency*2)
-        x  = x.view(-1, x.shape[2], x.shape[3])
-        # (Batch*Channel, Frame, Frequency*2)
 
         ################################ Mask ################################
-        x, _ = self.lstm(x)
+        x = self.mask_gen(x)
         # (Batch*Channel, Frame, Hidden)
         specs = []
         for linear in self.linears:
