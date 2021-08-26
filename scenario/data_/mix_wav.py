@@ -27,6 +27,7 @@ def mix_wav_(args, mode='train'):
 
     Parallel(n_jobs=os.cpu_count())(delayed(f)(i, line) for i, line in enumerate(ls))
 
+    tic = time.time()
     ls = open(f'../config/{mode}/noise.list').read().strip().split('\n')
     def f(i, line):
         x = get_firstchannel_read(line)
@@ -38,6 +39,7 @@ def mix_wav_(args, mode='train'):
             print('[+] {}/{} elapsed={} remain={}'.format(i, len(ls), elapsed, remain))
     Parallel(n_jobs=os.cpu_count())(delayed(f)(i, line) for i, line in enumerate(ls))
 
+    tic = time.time()
     ls = open(f'../config/{mode}/rir.list').read().strip().split('\n')
     def f(i, line):
         x = audioread(line)
