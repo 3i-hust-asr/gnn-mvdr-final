@@ -10,7 +10,7 @@ def get_model(args):
     elif args.model == 'tencent':
         model = Tencent()
     elif args.model == 'mvdr':
-        model = Mvdr()
+        model = Mvdr(args)
     else:
         raise NotImplementedError
     return model.to(args.device)

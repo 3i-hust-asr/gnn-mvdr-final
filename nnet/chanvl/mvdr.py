@@ -1,50 +1,33 @@
 from torch_complex.tensor import ComplexTensor
 from torch_complex import functional as FC
 from typing import Tuple, Union, List
-from torch.nn import functional as F
 import torch.nn as nn
 import torch
 
 from ..common import Stft
+from .mask import *
 from .util import *
-
-class MaskLstm(torch.nn.Module):
-
-    def __init__(self, input_size, hidden_size, bidirectional):
-        super(MaskLstm, self).__init__()
-        self.module = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=2, bidirectional=bidirectional, batch_first=True)
-
-    def forward(self, x):
-        # (Batch, Channel, Frame, Frequency*2)
-        x  = x.view(-1, x.shape[2], x.shape[3])
-        # (Batch*Channel, Frame, Frequency*2)
-        x, _ = self.module(x)
-        # (Batch*Channel, Frame, Hidden)
-        return x
-
-class MaskGNN(torch.nn.Module):
-
-    def __init__(self):
-        super(MaskGNN, self).__init__()
-
-
+from .gnn import *
 
 class Mvdr(torch.nn.Module):
 
-    def __init__(self):
-        super(Mvdr, self).__init__()
+    def __init__(self, args, mask_type='gcn'):
+        super().__init__()
 
         fft_len=512
-        rnn_units=128
-        bidirectional = False
-
-        num_bins = fft_len // 2 + 1
+        mask_hidden=128
+        mask_input = (fft_len // 2 + 1) * 2
 
         self.stft = Stft(n_fft=fft_len, win_length=320, hop_length=160, window='hann')
-        self.mask_gen = MaskLstm(input_size=num_bins*2, hidden_size=rnn_units, bidirectional=bidirectional)
 
-        fac = 2 if bidirectional else 1
-        self.linears = torch.nn.ModuleList([torch.nn.Linear(rnn_units * fac, num_bins * 2) for _ in range(2)])
+        if mask_type == 'lstm':
+            self.mask_gen = MaskLstm(input_size=mask_input, hidden_size=mask_hidden)
+        elif mask_type == 'gcn':
+            self.mask_gen = MaskGNNUnet(GCN, args, input_size=mask_input, hidden_size=mask_hidden)
+        else:
+            raise NotImplementedError
+
+        self.linears = torch.nn.ModuleList([torch.nn.Linear(mask_hidden, mask_input) for _ in range(2)])
 
         self.ref_channel = 0
 

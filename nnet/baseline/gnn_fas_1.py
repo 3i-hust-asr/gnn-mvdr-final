@@ -116,7 +116,7 @@ class GNNFaS1(nn.Module):
         # padding
         valid_T = self.valid_length(frame)
         valid_F = self.valid_length(freq)
-        x = F.pad(x, (0, valid_F - freq, 0, valid_T - frame))
+        x = nn.functional.pad(x, (0, valid_F - freq, 0, valid_T - frame))
         # (B*C, 2, valid_T, valid_F)
         # print('padded :', x.shape)
 
