@@ -135,7 +135,7 @@ def get_scale(scale_range=[0.2, 0.9]):
     return np.random.uniform(*scale_range)
 
 def save_config_full(items, args, mode='train'):
-    path = f'../config/{mode}/clean.list'.format(name)
+    path = f'../config/{mode}/clean.list'
     with open(path, 'a') as fp:
         fp.write('\n'.join(items))
         fp.write('\n')
