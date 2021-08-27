@@ -9,46 +9,28 @@ import os
 class NoisyDataset(Dataset):
 
     def __init__(self, args, mode='train'):
-        self.clean_path = [os.path.join(f'../mixed/clean/{mode}', f) for f in os.listdir(f'../mixed/clean/{mode}')]
-        self.noise_path = [os.path.join(f'../mixed/noise/{mode}', f) for f in os.listdir(f'../mixed/noise/{mode}')]
-        self.rir_path   = [os.path.join(f'../mixed/rir/{mode}', f) for f in os.listdir(f'../mixed/rir/{mode}')]
-
-        # self.clean_path = [os.path.join(f'../mixed/clean/train', f) for f in os.listdir(f'../mixed/clean/train')]
-        # self.noise_path = [os.path.join(f'../mixed/noise/train', f) for f in os.listdir(f'../mixed/noise/train')]
-        # self.noise_path = list(sorted(self.noise_path))
-        # self.rir_path   = [os.path.join(f'../mixed/rir/train', f) for f in os.listdir(f'../mixed/rir/train')]
-        # self.rir_path   = list(sorted(self.rir_path))
-        # self.rir_path   = self.rir_path[:args.limit_rir]
-        
         self.args = args
         self.mode = mode
+        self.clean_path = [os.path.join(f'../mixed/{mode}/clean', f) for f in os.listdir(f'../mixed/{mode}/clean')]
+        self.noise_path = [os.path.join(f'../mixed/{mode}/noise', f) for f in os.listdir(f'../mixed/{mode}/noise')]
+        self.rir_path   = [os.path.join(f'../mixed/{mode}/rir', f) for f in os.listdir(f'../mixed/{mode}/rir')]
 
     def __len__(self):
         return len(self.clean_path)
 
     def __getitem__(self, idx):
-        while 1:
-            try:
-                clean_idx = idx % len(self.clean_path)
-                noise_idx = idx % len(self.noise_path)
-                rir_idx = idx % len(self.rir_path)
-
-                # clean
-                clean = torch.tensor(np.load(self.clean_path[clean_idx])['x'], dtype=torch.float32)
-
-                # noise + padding
-                noise = torch.zeros_like(clean, dtype=torch.float32)
-                noise_np = np.load(self.noise_path[noise_idx])['x']
-                noise_np = noise_np[:len(clean)]
-                noise[:len(noise_np)] = torch.tensor(noise_np, dtype=torch.float32)
-
-                # rir
-                rir   = torch.tensor(np.load(self.rir_path[rir_idx])['x'], dtype=torch.float32)
-            except: 
-                idx += 1
-            else:
-                break
-
+        clean_idx = idx % len(self.clean_path)
+        noise_idx = idx % len(self.noise_path)
+        rir_idx = idx % len(self.rir_path)
+        # clean
+        clean = torch.tensor(np.load(self.clean_path[clean_idx])['x'], dtype=torch.float32)
+        # noise + padding
+        noise = torch.zeros_like(clean, dtype=torch.float32)
+        noise_np = np.load(self.noise_path[noise_idx])['x']
+        noise_np = noise_np[:len(clean)]
+        noise[:len(noise_np)] = torch.tensor(noise_np, dtype=torch.float32)
+        # rir
+        rir = torch.tensor(np.load(self.rir_path[rir_idx])['x'], dtype=torch.float32)
         return clean, noise, rir
 
 def get_loader(args):
