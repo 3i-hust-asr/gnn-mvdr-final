@@ -47,7 +47,9 @@ def train_one_example(args):
 
             # Validation step
             # compute loss
-            y_hat_device = model(inputs)
+            with torch.no_grad():
+                y_hat_device = model(inputs)
+                
             y_hat = y_hat_device.detach().cpu().numpy()
             # compute metrics
             metrics = compute_metrics(x, y, y_hat, args)

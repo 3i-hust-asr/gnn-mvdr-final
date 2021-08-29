@@ -4,7 +4,7 @@ from .chanvl import *
 
 def get_model(args):
     if args.model == 'baseline':
-        model = GNNFaS(args, use_linear=False)
+        model = GNNFaS(args)
     elif args.model == 'baseline1':
         model = GNNFaS1(args)
     elif args.model == 'tencent':

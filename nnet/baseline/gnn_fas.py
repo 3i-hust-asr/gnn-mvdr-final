@@ -1,6 +1,7 @@
 from torch import nn
 import torch
 import math
+import time
 
 from ..common import Stft
 
@@ -23,21 +24,29 @@ class GCN(nn.Module):
         B, N, F = x.shape
         # construct adjacency matrix
         adj = torch.zeros((B, N, N, 2 * F), device=x.device)
+        tic = time.time()
         for i in range(N):
             for j in range(N):
                 adj[:, i, j, :] = torch.cat((x[:, i, :], x[:, j, :]), dim=-1)
+        print('adj:', time.time() - tic)
         # non-linear function
+        tic = time.time()
         adj = self.adj_transform(adj).squeeze(-1) # (B, N, N)
+        print('adj_transform:', time.time() - tic)
         # normalize
         # adj = adj.softmax(dim=1)
+
         # add self loop
-        idx = torch.arange(N, dtype=torch.long, device=x.device)
-        adj[:, idx, idx] += 1.0
+        # idx = torch.arange(N, dtype=torch.long, device=x.device)
+        # adj[:, idx, idx] += 1.0
+
         # convolution
+        tic = time.time()
         out = torch.matmul(x, self.weight)
         deg_inv_sqrt = adj.sum(dim=-1).clamp(min=1).pow(-0.5)
         adj = deg_inv_sqrt.unsqueeze(-1) * adj * deg_inv_sqrt.unsqueeze(-2)
         out = torch.matmul(adj, out)
+        print('convolution:', time.time() - tic)
         # add bias
         if self.bias is not None:
             out = out + self.bias
@@ -52,7 +61,7 @@ class GNNFaS(nn.Module):
 
     def __init__(self, args, use_linear=True):
         super().__init__()
-        self.n_filters = [128, 256, 256, 256, 64]
+        self.n_filters = [64, 128, 128, 64, 16]
         self.kernel_size = 3
         self.stride = 2
         self.use_linear = use_linear
@@ -135,14 +144,18 @@ class GNNFaS(nn.Module):
 
         # GCN
         _, node, t, f = x.shape
-        x = x.view(B, node, -1).contiguous()
+        x = x.view(B, node, -1)
         # B, node, tf
         if self.use_linear:
             x = self.linear_1(x)
             # B, node, hidden
         # B, C, hidden
+        tic = time.time()
         gcn_1_out = self.gcn_1(x)
+        print('gcn 1 in:', time.time() - tic)
+        tic = time.time()
         gcn_2_out = self.gcn_2(gcn_1_out)
+        print('gcn 2 in:', time.time() - tic)
         # B, C, hidden
         x = x * gcn_2_out
         # B, node, hidden
