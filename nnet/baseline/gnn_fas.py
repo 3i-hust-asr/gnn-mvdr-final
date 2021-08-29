@@ -135,7 +135,7 @@ class GNNFaS(nn.Module):
 
         # GCN
         _, node, t, f = x.shape
-        x = x.contiguous().view(B, node, -1)
+        x = x.view(B, node, -1).contiguous()
         # B, node, tf
         if self.use_linear:
             x = self.linear_1(x)
