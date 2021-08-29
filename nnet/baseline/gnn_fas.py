@@ -23,29 +23,17 @@ class GCN(nn.Module):
     def forward(self, x, return_adj=False):
         B, N, F = x.shape
         # construct adjacency matrix
-        tic = time.time()
         tmp = x.unsqueeze(1).expand(-1, N, -1, -1)
         adj = torch.cat((tmp, tmp.transpose(1, 2)), dim=-1)
 
-        print('adj:', time.time() - tic)
         # non-linear function
-        tic = time.time()
         adj = self.adj_transform(adj).squeeze(-1) # (B, N, N)
-        print('adj_transform:', time.time() - tic)
-        # normalize
-        # adj = adj.softmax(dim=1)
-
-        # add self loop
-        # idx = torch.arange(N, dtype=torch.long, device=x.device)
-        # adj[:, idx, idx] += 1.0
 
         # convolution
-        tic = time.time()
         out = torch.matmul(x, self.weight)
         deg_inv_sqrt = adj.sum(dim=-1).clamp(min=1).pow(-0.5)
         adj = deg_inv_sqrt.unsqueeze(-1) * adj * deg_inv_sqrt.unsqueeze(-2)
         out = torch.matmul(adj, out)
-        print('convolution:', time.time() - tic)
         # add bias
         if self.bias is not None:
             out = out + self.bias
@@ -149,12 +137,8 @@ class GNNFaS(nn.Module):
             x = self.linear_1(x)
             # B, node, hidden
         # B, C, hidden
-        tic = time.time()
         gcn_1_out = self.gcn_1(x)
-        print('gcn 1 in:', time.time() - tic)
-        tic = time.time()
         gcn_2_out = self.gcn_2(gcn_1_out)
-        print('gcn 2 in:', time.time() - tic)
         # B, C, hidden
         x = x * gcn_2_out
         # B, node, hidden
