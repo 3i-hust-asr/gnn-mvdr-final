@@ -8,7 +8,7 @@ def get_args():
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--scenario', type=str, default='test_model')
-    parser.add_argument('--model', type=str, default='tencent')
+    parser.add_argument('--model', type=str, default='baseline')
 
     parser.add_argument('--num_worker', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=8)

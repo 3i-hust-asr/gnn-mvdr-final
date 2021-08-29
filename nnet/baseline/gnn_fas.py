@@ -23,11 +23,10 @@ class GCN(nn.Module):
     def forward(self, x, return_adj=False):
         B, N, F = x.shape
         # construct adjacency matrix
-        adj = torch.zeros((B, N, N, 2 * F), device=x.device)
         tic = time.time()
-        for i in range(N):
-            for j in range(N):
-                adj[:, i, j, :] = torch.cat((x[:, i, :], x[:, j, :]), dim=-1)
+        tmp = x.unsqueeze(1).expand(-1, N, -1, -1)
+        adj = torch.cat((tmp, tmp.transpose(1, 2)), dim=-1)
+
         print('adj:', time.time() - tic)
         # non-linear function
         tic = time.time()
@@ -53,7 +52,7 @@ class GCN(nn.Module):
         # activation
         out = out.relu()
         if return_adj:
-            return out, adj
+            return out, adjpython
         return out
 
 
