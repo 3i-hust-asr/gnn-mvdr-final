@@ -133,41 +133,6 @@ class Trainer:
         self.load_checkpoint()
 
         for epoch in range(self.epoch, self.args.num_epoch + 1):
-            ##########################################################################################
-            # train
-            loss_dicts = None
-            self.model.train()
-            with tqdm.tqdm(self.train_loader, unit="it") as pbar:
-                pbar.set_description(f'Epoch {epoch}')
-                for batch_idx, batch in enumerate(pbar):
-
-                    # perform training step
-                    loss_dict = self.train_step(batch, batch_idx)
-                    if loss_dicts is None:
-                        loss_dicts = {}
-                        for key in loss_dict:
-                            loss_dicts[key] = []
-                    for key in loss_dict:
-                        loss_dicts[key].append(float(loss_dict[key].detach().cpu()))
-
-                    # limit train batch hook
-                    if self.limit_train_batch_hook(batch_idx):
-                        break
-
-                    # set postfix
-                    kwargs = {}
-                    for key in loss_dict:
-                        kwargs[key] = float(loss_dict[key].detach().cpu())
-                    pbar.set_postfix(**kwargs)
-
-                    # log
-                    self.epoch = epoch
-                    self.iteration += 1
-                    if self.iteration % self.args.log_iter == 0:
-                        self.write_train_metric_to_tensorboard(loss_dicts)
-                        loss_dicts = None
-            # save checkpoint
-            self.save_checkpoint()
             
             ##########################################################################################
             # evalute
@@ -211,9 +176,43 @@ class Trainer:
 
                 # print epoch summary
                 self.write_dev_metric_to_tensorboard(epoch, metrics)
-            
+                
+            ##########################################################################################
+            # train
+            loss_dicts = None
+            self.model.train()
+            with tqdm.tqdm(self.train_loader, unit="it") as pbar:
+                pbar.set_description(f'Epoch {epoch}')
+                for batch_idx, batch in enumerate(pbar):
+
+                    # perform training step
+                    loss_dict = self.train_step(batch, batch_idx)
+                    if loss_dicts is None:
+                        loss_dicts = {}
+                        for key in loss_dict:
+                            loss_dicts[key] = []
+                    for key in loss_dict:
+                        loss_dicts[key].append(float(loss_dict[key].detach().cpu()))
+
+                    # limit train batch hook
+                    if self.limit_train_batch_hook(batch_idx):
+                        break
+
+                    # set postfix
+                    kwargs = {}
+                    for key in loss_dict:
+                        kwargs[key] = float(loss_dict[key].detach().cpu())
+                    pbar.set_postfix(**kwargs)
+
+                    # log
+                    self.epoch = epoch
+                    self.iteration += 1
+                    if self.iteration % self.args.log_iter == 0:
+                        self.write_train_metric_to_tensorboard(loss_dicts)
+                        loss_dicts = None
             # save checkpoint
             self.save_checkpoint()
+
 
             # set use cache to true
             ##########################################################################################
