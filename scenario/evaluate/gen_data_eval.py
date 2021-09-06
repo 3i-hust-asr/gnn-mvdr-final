@@ -32,8 +32,8 @@ def gen_data(args, mode='dev'):
         with open(path, 'w') as fp:
             fp.write('\n'.join(rir_list))
 
-    # for rir in rirs:
-    #     mix_wav(rir, mode=mode)
+    for rir in rirs:
+        mix_wav(rir, mode=mode)
 
     augment_model = nnet.Augmentation(args)
 
