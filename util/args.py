@@ -7,7 +7,7 @@ def get_args():
     
     parser.add_argument('--seed', type=int, default=0)
 
-    parser.add_argument('--scenario', type=str, default='test_model')
+    parser.add_argument('--scenario', type=str, default='gen_data_eval')
     parser.add_argument('--model', type=str, default='baseline')
 
     parser.add_argument('--num_worker', type=int, default=0)
