@@ -47,11 +47,11 @@ def compute_metrics(x, y, y_hat, args):
     metrics['si_snr:noisy'] = compute_segmented_si_snr(y, x[..., 0])
     # PESQ
     metrics['pesq:enhanced'] = compute_pesq(y, y_hat, args)
-    # metrics['pesq:noisy'] = compute_pesq(y, x[..., 0], args)
+    metrics['pesq:noisy'] = compute_pesq(y, x[..., 0], args)
     # STOI
     metrics['stoi:enhanced'] = compute_stoi(y, y_hat, args)
-    # metrics['stoi:noisy'] = compute_stoi(y, x[..., 0], args)
+    metrics['stoi:noisy'] = compute_stoi(y, x[..., 0], args)
     # ESTOI
     metrics['estoi:enhanced'] = compute_estoi(y, y_hat, args)
-    # metrics['estoi:noisy'] = compute_estoi(y, x[..., 0], args)
+    metrics['estoi:noisy'] = compute_estoi(y, x[..., 0], args)
     return metrics

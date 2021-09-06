@@ -52,7 +52,7 @@ def gen_data(args, mode='dev'):
                 # print(x.shape, y.shape)
                 # exit()
                 path = os.path.join(folder, f'data-{i}.npz')
-                np.savez_compressed(path, {'x': x, 'y': y})
+                np.savez_compressed(path, x=x, y=y)
 
 
 

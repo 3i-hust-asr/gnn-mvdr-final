@@ -40,7 +40,7 @@ class GCN(nn.Module):
         # activation
         out = out.relu()
         if return_adj:
-            return out, adjpython
+            return out, adj
         return out
 
 

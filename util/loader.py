@@ -64,6 +64,22 @@ class EvalDataset(Dataset):
         rir = torch.tensor(np.load(self.rir_path[rir_idx])['x'], dtype=torch.float32)
         return clean, noise, rir
 
+
+class MixedDataset(Dataset):
+
+    def __init__(self, rir, args, mode='dev'):
+        folder = f'../mixed/{mode}/eval/{rir}'
+        self.path = [os.path.join(folder, f) for f in os.listdir(folder)]
+
+    def __len__(self):
+        return len(self.path)
+
+    def __getitem__(self, idx):
+        data = np.load(self.path[idx])
+        noisy = torch.tensor(data['x'], dtype=torch.float32)
+        clean_reverb = torch.tensor(data['y'], dtype=torch.float32)
+        return noisy.squeeze(0), clean_reverb.squeeze(0)
+
 def get_loader(args):
 
     def collate_fn(batch):
@@ -98,3 +114,6 @@ def get_eval_loader(rir, args):
         rir = [item[2] for item in batch]
         return clean, noise, rir
     return DataLoader(dataset=EvalDataset(rir, args), collate_fn=collate_fn, batch_size=1)
+
+def get_mixed_loader(rir, args):
+    return DataLoader(dataset=MixedDataset(rir, args), batch_size=args.batch_size)
