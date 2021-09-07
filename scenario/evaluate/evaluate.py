@@ -19,8 +19,8 @@ def _evaluate(model_name, epoch, args):
     ckpt_path = f'ckpt/{model_name}/checkpoints/{model_name}_epoch_{epoch}.ckpt'
     if not os.path.exists(ckpt_path):
         raise ckpt_path
-    print('Evaluate checkpoint:', ckpt_path)
     checkpoint = torch.load(ckpt_path)
+    print('Evaluate checkpoint:', ckpt_path, checkpoint['epoch'])
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
     all_metrics = {}
