@@ -95,6 +95,7 @@ class Trainer:
         path = self.get_checkpoint_path()
         if os.path.exists(path):
             checkpoint = torch.load(path)
+            print('[+] checkpoint loaded:', path)
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.epoch = checkpoint['epoch']
             self.iteration = checkpoint['iteration']
@@ -232,14 +233,16 @@ class Trainer:
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             }, self.get_checkpoint_path())
-        # save checkpoint for each epoch
-        torch.save({
-            'iteration': self.iteration,
-            'epoch': self.epoch,
-            'model_state_dict': self.model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
-            }, self.get_checkpoint_path().replace('.ckpt', f'_epoch_{self.epoch}.ckpt'))
         print('[+] checkpoint saved')
+        # save checkpoint for each epoch
+        # torch.save({
+        #     'iteration': self.iteration,
+        #     'epoch': self.epoch,
+        #     'model_state_dict': self.model.state_dict(),
+        #     'optimizer_state_dict': self.optimizer.state_dict(),
+        #     }, self.get_checkpoint_path().replace('.ckpt', f'_epoch_{self.epoch}.ckpt'))
+        os.system('cp {} {}'.format(self.get_checkpoint_path(), self.get_checkpoint_path().replace('.ckpt', f'_epoch_{self.epoch}.ckpt')))
+        print('[+] checkpoint copied')
 
 def train(args):
     trainer = Trainer(args)

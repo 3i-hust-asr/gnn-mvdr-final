@@ -68,11 +68,11 @@ def evaluate(args):
         'tencent': {},
     }
 
-    for epoch in range(5, 8):
-        metric = _evaluate('baseline', epoch, args)
-        all_metrics['baseline'][f'epoch_{epoch}'] = metric
+    # for epoch in [8]:
+    #     metric = _evaluate('baseline', epoch, args)
+    #     all_metrics['baseline'][f'epoch_{epoch}'] = metric
 
-    for epoch in range(10, 14):
+    for epoch in [13]:
         metric = _evaluate('tencent', epoch, args)
         all_metrics['tencent'][f'epoch_{epoch}'] = metric
 
