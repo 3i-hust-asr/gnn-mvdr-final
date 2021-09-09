@@ -131,9 +131,9 @@ class Trainer:
 
     def _fit(self):
         # load checkpoint
-        self.load_checkpoint()
 
         for epoch in range(self.epoch, self.args.num_epoch + 1):
+            self.load_checkpoint()
             
             ##########################################################################################
             # evalute
@@ -223,7 +223,13 @@ class Trainer:
             self._fit()
         except KeyboardInterrupt: 
             pass
-        self.save_checkpoint()
+        torch.save({
+            'iteration': self.iteration,
+            'epoch': self.epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            }, self.get_checkpoint_path())
+        print('[+] checkpoint saved')
 
     def save_checkpoint(self):
         # save checkpoint
@@ -234,13 +240,7 @@ class Trainer:
             'optimizer_state_dict': self.optimizer.state_dict(),
             }, self.get_checkpoint_path())
         print('[+] checkpoint saved')
-        # save checkpoint for each epoch
-        # torch.save({
-        #     'iteration': self.iteration,
-        #     'epoch': self.epoch,
-        #     'model_state_dict': self.model.state_dict(),
-        #     'optimizer_state_dict': self.optimizer.state_dict(),
-        #     }, self.get_checkpoint_path().replace('.ckpt', f'_epoch_{self.epoch}.ckpt'))
+
         os.system('cp {} {}'.format(self.get_checkpoint_path(), self.get_checkpoint_path().replace('.ckpt', f'_epoch_{self.epoch}.ckpt')))
         print('[+] checkpoint copied')
 
