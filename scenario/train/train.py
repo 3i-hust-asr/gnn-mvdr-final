@@ -136,13 +136,12 @@ class Trainer:
             self.load_checkpoint()
             
             ##########################################################################################
-            # evalute
+            # evaluate
             if self.args.evaluate and (epoch % self.args.eval_iter == 0):
                 self.model.eval()
-                all_metrics = {}
+                metrics = {}
                 with tqdm.tqdm(self.dev_loader, unit="it") as pbar:
-                    pbar.set_description(f'Evaluate epoch - dev {epoch}')
-                    metrics = {}
+                    pbar.set_description(f'[After loading checkpoint] Evaluate epoch - dev {epoch}')
                     for batch_idx, batch in enumerate(pbar):
                         # validate
                         batch_metrics = self.validation_step(batch, batch_idx, mode='dev')
@@ -156,7 +155,9 @@ class Trainer:
                         # limit train batch hook
                         if self.limit_val_batch_hook(batch_idx):
                             break
-                all_metrics.update(metrics)
+                self.write_dev_metric_to_tensorboard(epoch, metrics)
+
+                # all_metrics.update(metrics)
 
                 # with tqdm.tqdm(self.train_loader, unit="it") as pbar:
                 #     pbar.set_description(f'Evaluate epoch - train {epoch}')
@@ -176,7 +177,6 @@ class Trainer:
                 # all_metrics.update(metrics)
 
                 # print epoch summary
-                self.write_dev_metric_to_tensorboard(epoch, metrics)
                 
             ##########################################################################################
             # train
@@ -211,12 +211,32 @@ class Trainer:
                     if self.iteration % self.args.log_iter == 0:
                         self.write_train_metric_to_tensorboard(loss_dicts)
                         loss_dicts = None
+
+            ##########################################################################################
+            # evaluate
+            if self.args.evaluate and (epoch % self.args.eval_iter == 0):
+                self.model.eval()
+                metrics = {}
+                with tqdm.tqdm(self.dev_loader, unit="it") as pbar:
+                    pbar.set_description(f'[After training epoch] Evaluate epoch - dev {epoch}')
+                    for batch_idx, batch in enumerate(pbar):
+                        # validate
+                        batch_metrics = self.validation_step(batch, batch_idx, mode='dev')
+                        # accumulate valilation metrics
+                        for key in batch_metrics:
+                            if key not in metrics.keys():
+                                metrics[key] = []
+                        for key in batch_metrics:
+                            metrics[key] += batch_metrics[key].tolist()
+                        pbar.set_postfix(si_snr=np.mean(metrics['dev:si_snr:enhanced']))
+                        # limit train batch hook
+                        if self.limit_val_batch_hook(batch_idx):
+                            break
+                self.write_dev_metric_to_tensorboard(epoch, metrics)
+            ##########################################################################################
+
             # save checkpoint
             self.save_checkpoint(epoch)
-
-
-            # set use cache to true
-            ##########################################################################################
 
     def fit(self):
         try:
