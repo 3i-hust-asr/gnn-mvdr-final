@@ -18,9 +18,9 @@ class MaskLstm(torch.nn.Module):
 
 class MaskGNNUnet(torch.nn.Module):
 
-    def __init__(self, embed_class, args, input_size=None, hidden_size=None, use_linear=False):
+    def __init__(self, embed_class, args, input_size=None, hidden_size=None, use_linear=True):
         super().__init__()
-        self.n_filters = [128, 128, 128, 128, 64]
+        self.n_filters = [128, 128, 256, 128, 32]
         self.kernel_size = 3
         self.stride = 2
         self.use_linear = use_linear
@@ -45,7 +45,7 @@ class MaskGNNUnet(torch.nn.Module):
             self.decoder.insert(0, nn.Sequential(*decode))
             chin = n_filter
 
-        linear_hidden = 48
+        linear_hidden = 288
         embed_hidden = 64
 
         if self.use_linear:
@@ -84,9 +84,11 @@ class MaskGNNUnet(torch.nn.Module):
         x = x.contiguous().view(B, node, t*f)
         if self.use_linear:
             x = self.linear_1(x)
+
         out_1 = self.embed_1(x)
         out_2 = self.embed_2(out_1)
         x = x * out_2
+        
         if self.use_linear:
             x = self.linear_2(x)
         x = x.view(B, node, t, f)

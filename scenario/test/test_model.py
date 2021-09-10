@@ -7,7 +7,7 @@ import nnet
 def test_model(args):
     print('test model')
     model = nnet.get_model(args)
-    nnet.print_summary(model)
+    nnet.print_summary(model, verbose=True)
     x = torch.randn(3, 96000, 8).to(args.device)
     loss = model.compute_loss(x, x[..., 0])
     print(loss)

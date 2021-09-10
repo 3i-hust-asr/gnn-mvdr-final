@@ -18,17 +18,12 @@ class GCN(nn.Module):
     def forward(self, x, return_adj=False):
         B, N, F = x.shape
         # construct adjacency matrix
-        adj = torch.zeros((B, N, N, 2 * F), device=x.device)
-        for i in range(N):
-            for j in range(N):
-                adj[:, i, j, :] = torch.cat((x[:, i, :], x[:, j, :]), dim=-1)
+        tmp = x.unsqueeze(1).expand(-1, N, -1, -1)
+        adj = torch.cat((tmp, tmp.transpose(1, 2)), dim=-1)
+
         # non-linear function
         adj = self.adj_transform(adj).squeeze(-1) # (B, N, N)
-        # normalize
-        # adj = adj.softmax(dim=1)
-        # add self loop
-        idx = torch.arange(N, dtype=torch.long, device=x.device)
-        adj[:, idx, idx] += 1.0
+
         # convolution
         out = torch.matmul(x, self.weight)
         deg_inv_sqrt = adj.sum(dim=-1).clamp(min=1).pow(-0.5)
