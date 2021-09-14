@@ -75,10 +75,6 @@ def evaluate(args):
         'mvdr': {},
     }
 
-    for epoch in [13]:
-        metric = _evaluate('tencent', epoch, args)
-        all_metrics['tencent'][f'epoch_{epoch}'] = metric
-
     for epoch in [6]:
         metric = _evaluate('baseline', epoch, args)
         all_metrics['baseline'][f'epoch_{epoch}'] = metric
@@ -86,6 +82,10 @@ def evaluate(args):
     for epoch in [2]:
         metric = _evaluate('mvdr', epoch, args)
         all_metrics['mvdr'][f'epoch_{epoch}'] = metric
+
+    for epoch in [13]:
+        metric = _evaluate('tencent', epoch, args)
+        all_metrics['tencent'][f'epoch_{epoch}'] = metric
 
     with open('ckpt/result.json', 'w') as f:
         json.dump(all_metrics, f, indent=4)
