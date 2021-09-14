@@ -20,33 +20,33 @@ def _evaluate(model_name, epoch, args):
     if not os.path.exists(ckpt_path):
         raise ckpt_path
     checkpoint = torch.load(ckpt_path)
-    print('Evaluate checkpoint:', ckpt_path, checkpoint['epoch'])
+    print('Evaluate checkpoint:', ckpt_path)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
     all_metrics = {}
 
     for rir in ['linear', 'circle', 'non_uniform']:
-        loader = util.get_mixed_loader(rir, args)
-        # _, loader = util.get_loader(args)
+        # loader = util.get_mixed_loader(rir, args)
+        _, loader = util.get_loader(args)
 
         metrics = {}
         with tqdm.tqdm(loader, unit="it") as pbar:
             pbar.set_description(f'Evaluate {rir}')
             for i, batch in enumerate(pbar):
                 with torch.no_grad():
-                    # cleans, noises, rirs = batch
-                    # inputs, cleans, noises, clean_reverbs, noise_reverbs = augment_model(cleans, noises, rirs)
-                    # x = inputs.detach().cpu().numpy()
-                    # y = clean_reverbs[:, :, 0].detach().cpu().numpy()
-                    # # compute loss
-                    # y_hat_device = model(inputs)
+                    cleans, noises, rirs = batch
+                    inputs, _, _, clean_reverbs, _ = augment_model(cleans, noises, rirs)
+                    x = inputs.detach().cpu().numpy()
+                    y = clean_reverbs[:, :, 0].detach().cpu().numpy()
+                    y_hat_device = model(inputs)
+                    y_hat = y_hat_device.detach().cpu().numpy()
+
+                    # noisy, clean_reverb = batch
+                    # x = noisy.detach().cpu().numpy()
+                    # y = clean_reverb[:, :, 0].detach().cpu().numpy()
+                    # y_hat_device = model(noisy.to(args.device))
                     # y_hat = y_hat_device.detach().cpu().numpy()
 
-                    noisy, clean_reverb = batch
-                    x = noisy.detach().cpu().numpy()
-                    y = clean_reverb[:, :, 0].detach().cpu().numpy()
-                    y_hat_device = model(noisy.to(args.device))
-                    y_hat = y_hat_device.detach().cpu().numpy()
                     batch_metrics = compute_metrics(x, y, y_hat, args)
 
                 for key in batch_metrics:
@@ -59,6 +59,7 @@ def _evaluate(model_name, epoch, args):
         for key in metrics:
             metrics[key] = np.mean(metrics[key])
         all_metrics[rir] = metrics
+    print(all_metrics)
     return all_metrics
 
 
@@ -68,9 +69,9 @@ def evaluate(args):
         'tencent': {},
     }
 
-    # for epoch in [8]:
-    #     metric = _evaluate('baseline', epoch, args)
-    #     all_metrics['baseline'][f'epoch_{epoch}'] = metric
+    for epoch in [7, 6, 5, 4, 3, 2, 1]:
+        metric = _evaluate('baseline', epoch, args)
+        all_metrics['baseline'][f'epoch_{epoch}'] = metric
 
     for epoch in [13]:
         metric = _evaluate('tencent', epoch, args)
