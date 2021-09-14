@@ -18,17 +18,17 @@ def get_logs_folder(args):
     return os.path.join(get_ckpt_folder(args).replace('checkpoints', 'logs'), get_ckpt_name(args))
 
 def compute_segmented_si_snr(y, y_hat):
-    y = y / np.linalg.norm(y, ord=2, axis=1, keepdims=True)
+    y_norm = y / np.linalg.norm(y, ord=2, axis=1, keepdims=True)
     y_hat = y_hat / np.linalg.norm(y_hat, ord=2, axis=1, keepdims=True)
 
 
-    s_target = (y * y_hat).sum(axis=1, keepdims=True) * y
+    s_target = (y_norm * y_hat).sum(axis=1, keepdims=True) * y_norm
     e_noise = y_hat - s_target
 
     si_snr = 20 * np.log10(
         np.linalg.norm(s_target, ord=2, axis=1) / np.linalg.norm(e_noise, ord=2, axis=1)
     )
-    return np.clip(si_snr, -100, 100)
+    return si_snr
 
 def compute_pesq(y, y_hat, args):
     return np.array(Parallel(n_jobs=os.cpu_count())(delayed(pesq)(16000, y_, y_hat_, 'wb') for y_, y_hat_ in zip(y, y_hat)))
