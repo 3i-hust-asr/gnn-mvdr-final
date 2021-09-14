@@ -26,26 +26,26 @@ def _evaluate(model_name, epoch, args):
     all_metrics = {}
 
     for rir in ['linear', 'circle', 'non_uniform']:
-        # loader = util.get_mixed_loader(rir, args)
-        _, loader = util.get_loader(args)
+        loader = util.get_mixed_loader(rir, args)
+        # _, loader = util.get_loader(args)
 
         metrics = {}
         with tqdm.tqdm(loader, unit="it") as pbar:
             pbar.set_description(f'Evaluate {rir}')
             for i, batch in enumerate(pbar):
                 with torch.no_grad():
-                    cleans, noises, rirs = batch
-                    inputs, _, _, clean_reverbs, _ = augment_model(cleans, noises, rirs)
-                    x = inputs.detach().cpu().numpy()
-                    y = clean_reverbs[:, :, 0].detach().cpu().numpy()
-                    y_hat_device = model(inputs)
-                    y_hat = y_hat_device.detach().cpu().numpy()
-
-                    # noisy, clean_reverb = batch
-                    # x = noisy.detach().cpu().numpy()
-                    # y = clean_reverb[:, :, 0].detach().cpu().numpy()
-                    # y_hat_device = model(noisy.to(args.device))
+                    # cleans, noises, rirs = batch
+                    # inputs, _, _, clean_reverbs, _ = augment_model(cleans, noises, rirs)
+                    # x = inputs.detach().cpu().numpy()
+                    # y = clean_reverbs[:, :, 0].detach().cpu().numpy()
+                    # y_hat_device = model(inputs)
                     # y_hat = y_hat_device.detach().cpu().numpy()
+
+                    noisy, clean_reverb = batch
+                    x = noisy.detach().cpu().numpy()
+                    y = clean_reverb[:, :, 0].detach().cpu().numpy()
+                    y_hat_device = model(noisy.to(args.device))
+                    y_hat = y_hat_device.detach().cpu().numpy()
 
                     batch_metrics = compute_metrics(x, y, y_hat, args)
 
@@ -59,7 +59,8 @@ def _evaluate(model_name, epoch, args):
         for key in metrics:
             metrics[key] = np.mean(metrics[key])
         all_metrics[rir] = metrics
-    print(all_metrics)
+        print(rir, metrics)
+    # print(all_metrics)
     return all_metrics
 
 
