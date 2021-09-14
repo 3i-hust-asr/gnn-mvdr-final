@@ -69,7 +69,14 @@ class MixedDataset(Dataset):
 
     def __init__(self, rir, args, mode='dev'):
         folder = f'../mixed/{mode}/eval/{rir}'
-        self.path = [os.path.join(folder, f) for f in os.listdir(folder)]
+        paths = os.path.join(folder, f'{rir}.txt')
+        if not os.path.exists(paths):
+            with open(paths, 'w') as fp:
+                for f in os.listdir(folder):
+                    if f.endswith('.npz'):
+                        fp.write(f + '\n')
+
+        self.path = [os.path.join(folder, f) for f in open(paths).read().strip().split('\n')]
 
     def __len__(self):
         return len(self.path)
