@@ -7,11 +7,11 @@ class GCN(nn.Module):
         super(GCN, self).__init__()
         self.adj_transform = nn.Linear(input_dim*2, 1)
 
-        weight = nn.Parameter(torch.Tensor(input_dim, output_dim)).to(args.device)
+        weight = nn.Parameter(torch.Tensor(input_dim, output_dim))
         torch.nn.init.xavier_normal_(weight)
         self.register_parameter('weight', weight)
 
-        bias = nn.Parameter(torch.Tensor(output_dim)).to(args.device)
+        bias = nn.Parameter(torch.Tensor(output_dim))
         torch.nn.init.normal_(bias)
         self.register_parameter('bias', bias)
 
