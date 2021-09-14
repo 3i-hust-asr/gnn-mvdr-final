@@ -7,13 +7,13 @@ class GCN(nn.Module):
         super(GCN, self).__init__()
         self.adj_transform = nn.Linear(input_dim*2, 1)
 
-        self.weight = nn.Parameter(torch.Tensor(input_dim, output_dim)).to(args.device)
-        torch.nn.init.xavier_normal_(self.weight)
-        if bias:
-            self.bias = nn.Parameter(torch.Tensor(output_dim)).to(args.device)
-            torch.nn.init.normal_(self.bias)
-        else:
-            self.register_parameter('bias', None)
+        weight = nn.Parameter(torch.Tensor(input_dim, output_dim)).to(args.device)
+        torch.nn.init.xavier_normal_(weight)
+        self.register_parameter('weight', weight)
+
+        bias = nn.Parameter(torch.Tensor(output_dim)).to(args.device)
+        torch.nn.init.normal_(bias)
+        self.register_parameter('bias', bias)
 
     def forward(self, x, return_adj=False):
         B, N, F = x.shape

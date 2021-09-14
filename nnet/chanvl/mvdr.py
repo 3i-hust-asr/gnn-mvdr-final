@@ -4,10 +4,9 @@ from typing import Tuple, Union, List
 import torch.nn as nn
 import torch
 
-from ..common import Stft
+from ..common import Stft, GCN
 from .mask import *
 from .util import *
-from .gnn import *
 
 class Mvdr(torch.nn.Module):
 

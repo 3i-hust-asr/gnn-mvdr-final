@@ -17,10 +17,15 @@ def _evaluate(model_name, epoch, args):
     augment_model = nnet.Augmentation(args)
 
     ckpt_path = f'ckpt/{model_name}/checkpoints/{model_name}_epoch_{epoch}.ckpt'
+    ckpt_path = f'ckpt/{model_name}_epoch_{epoch}.ckpt'
     if not os.path.exists(ckpt_path):
         raise ckpt_path
-    checkpoint = torch.load(ckpt_path)
+    checkpoint = torch.load(ckpt_path, map_location=args.device)
     print('Evaluate checkpoint:', ckpt_path)
+    print(checkpoint['model_state_dict'].__dict__)
+    for w in  checkpoint['model_state_dict']:
+        print(w)
+    # exit()
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
     all_metrics = {}
@@ -60,7 +65,6 @@ def _evaluate(model_name, epoch, args):
             metrics[key] = np.mean(metrics[key])
         all_metrics[rir] = metrics
         print(rir, metrics)
-    # print(all_metrics)
     return all_metrics
 
 
@@ -68,15 +72,20 @@ def evaluate(args):
     all_metrics = {
         'baseline': {},
         'tencent': {},
+        'mvdr': {},
     }
-
-    for epoch in [7, 6, 5, 4, 3, 2, 1]:
-        metric = _evaluate('baseline', epoch, args)
-        all_metrics['baseline'][f'epoch_{epoch}'] = metric
 
     for epoch in [13]:
         metric = _evaluate('tencent', epoch, args)
         all_metrics['tencent'][f'epoch_{epoch}'] = metric
+
+    for epoch in [6]:
+        metric = _evaluate('baseline', epoch, args)
+        all_metrics['baseline'][f'epoch_{epoch}'] = metric
+
+    for epoch in [2]:
+        metric = _evaluate('mvdr', epoch, args)
+        all_metrics['mvdr'][f'epoch_{epoch}'] = metric
 
     with open('ckpt/result.json', 'w') as f:
         json.dump(all_metrics, f, indent=4)
