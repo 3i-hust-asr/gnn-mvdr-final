@@ -22,9 +22,9 @@ def _evaluate(model_name, epoch, args):
         raise ckpt_path
     checkpoint = torch.load(ckpt_path, map_location=args.device)
     print('Evaluate checkpoint:', ckpt_path)
-    # for w in  checkpoint['model_state_dict']:
-    #     print(w)
-    # exit()
+    for w in  checkpoint['model_state_dict']:
+        print(w)
+    exit()
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
     all_metrics = {}
@@ -78,13 +78,13 @@ def evaluate(args):
         metric = _evaluate('baseline', epoch, args)
         all_metrics['baseline'][f'epoch_{epoch}'] = metric
 
-    for epoch in [2]:
-        metric = _evaluate('mvdr', epoch, args)
-        all_metrics['mvdr'][f'epoch_{epoch}'] = metric
+    # for epoch in [2]:
+    #     metric = _evaluate('mvdr', epoch, args)
+    #     all_metrics['mvdr'][f'epoch_{epoch}'] = metric
 
-    for epoch in [13]:
-        metric = _evaluate('tencent', epoch, args)
-        all_metrics['tencent'][f'epoch_{epoch}'] = metric
+    # for epoch in [13]:
+    #     metric = _evaluate('tencent', epoch, args)
+    #     all_metrics['tencent'][f'epoch_{epoch}'] = metric
 
     with open('ckpt/result.json', 'w') as f:
         json.dump(all_metrics, f, indent=4)
