@@ -22,9 +22,9 @@ def _evaluate(model_name, epoch, args):
         raise ckpt_path
     checkpoint = torch.load(ckpt_path, map_location=args.device)
     print('Evaluate checkpoint:', ckpt_path)
-    for w in  checkpoint['model_state_dict']:
-        print(w)
-    exit()
+    # for w in  checkpoint['model_state_dict']:
+    #     print(w)
+    # exit()
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
     all_metrics = {}
