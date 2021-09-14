@@ -25,7 +25,7 @@ def _evaluate(model_name, epoch, args):
     print(checkpoint['model_state_dict'].__dict__)
     for w in  checkpoint['model_state_dict']:
         print(w)
-    # exit()
+    exit()
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
     all_metrics = {}
