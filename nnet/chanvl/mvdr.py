@@ -14,7 +14,7 @@ class Mvdr(torch.nn.Module):
         super().__init__()
 
         fft_len=512
-        mask_hidden=128
+        mask_hidden=256
         mask_input = (fft_len // 2 + 1) * 2
 
         self.stft = Stft(n_fft=fft_len, win_length=320, hop_length=160, window='hann')
