@@ -9,10 +9,12 @@ class GCN(nn.Module):
 
         weight = nn.Parameter(torch.Tensor(input_dim, output_dim))
         torch.nn.init.xavier_normal_(weight)
+        # should call register_parameter for saving weights
         self.register_parameter('weight', weight)
 
         bias = nn.Parameter(torch.Tensor(output_dim))
         torch.nn.init.normal_(bias)
+        # should call register_parameter for saving bias
         self.register_parameter('bias', bias)
 
     def forward(self, x, return_adj=False):
