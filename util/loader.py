@@ -85,6 +85,10 @@ class MixedDataset(Dataset):
         data = np.load(self.path[idx])
         noisy = torch.tensor(data['x'], dtype=torch.float32)
         clean_reverb = torch.tensor(data['y'], dtype=torch.float32)
+<<<<<<< HEAD
+=======
+        # print(self.path[idx])
+>>>>>>> 7e6e40decaa3dce47ffe991a5ed9aa286aee20f1
         return noisy.squeeze(0), clean_reverb.squeeze(0)
 
 def get_loader(args):

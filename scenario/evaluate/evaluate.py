@@ -68,6 +68,7 @@ def _evaluate(model_name, epoch, args):
 
 
 def evaluate(args):
+<<<<<<< HEAD
     # all_metrics = {}
     # for epoch in [3, 2, 1]:
     #     metric = _evaluate('baseline', epoch, args)
@@ -89,4 +90,25 @@ def evaluate(args):
         metric = _evaluate('mvdr', epoch, args)
         all_metrics[f'epoch_{epoch}'] = metric
     with open('ckpt/mvdr.json', 'w') as f:
+=======
+    all_metrics = {
+        'baseline': {},
+        'tencent': {},
+        'mvdr': {},
+    }
+
+    for epoch in [6]:
+        metric = _evaluate('baseline', epoch, args)
+        all_metrics['baseline'][f'epoch_{epoch}'] = metric
+
+    # for epoch in [2]:
+    #     metric = _evaluate('mvdr', epoch, args)
+    #     all_metrics['mvdr'][f'epoch_{epoch}'] = metric
+
+    # for epoch in [13]:
+    #     metric = _evaluate('tencent', epoch, args)
+    #     all_metrics['tencent'][f'epoch_{epoch}'] = metric
+
+    with open('ckpt/result.json', 'w') as f:
+>>>>>>> 7e6e40decaa3dce47ffe991a5ed9aa286aee20f1
         json.dump(all_metrics, f, indent=4)
