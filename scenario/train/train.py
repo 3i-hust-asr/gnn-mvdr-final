@@ -132,53 +132,8 @@ class Trainer:
     def _fit(self):
         # load checkpoint
 
+        self.load_checkpoint()
         for epoch in range(self.args.num_epoch):
-            self.load_checkpoint()
-            
-            ##########################################################################################
-            # evaluate
-            if self.args.evaluate and (epoch % self.args.eval_iter == 0):
-                self.model.eval()
-                metrics = {}
-                with tqdm.tqdm(self.dev_loader, unit="it") as pbar:
-                    pbar.set_description(f'[After loading checkpoint] Evaluate epoch - dev {epoch}')
-                    for batch_idx, batch in enumerate(pbar):
-                        # validate
-                        batch_metrics = self.validation_step(batch, batch_idx, mode='dev')
-                        # accumulate valilation metrics
-                        for key in batch_metrics:
-                            if key not in metrics.keys():
-                                metrics[key] = []
-                        for key in batch_metrics:
-                            metrics[key] += batch_metrics[key].tolist()
-                        pbar.set_postfix(si_snr=np.mean(metrics['dev:si_snr:enhanced']))
-                        # limit train batch hook
-                        if self.limit_val_batch_hook(batch_idx):
-                            break
-                self.write_dev_metric_to_tensorboard(epoch, metrics)
-
-                # all_metrics.update(metrics)
-
-                # with tqdm.tqdm(self.train_loader, unit="it") as pbar:
-                #     pbar.set_description(f'Evaluate epoch - train {epoch}')
-                #     for batch_idx, batch in enumerate(pbar):
-                #         # validate
-                #         batch_metrics = self.validation_step(batch, batch_idx, mode='train')
-                #         # accumulate valilation metrics
-                #         for key in batch_metrics:
-                #             if key not in metrics.keys():
-                #                 metrics[key] = []
-                #         for key in batch_metrics:
-                #             metrics[key] += batch_metrics[key].tolist()
-                #         pbar.set_postfix(si_snr=np.mean(metrics['train:si_snr:enhanced']))
-                #         # limit train batch hook
-                #         if self.limit_val_batch_hook(batch_idx):
-                #             break
-                # all_metrics.update(metrics)
-
-                # print epoch summary
-                
-            ##########################################################################################
             # train
             loss_dicts = None
             self.model.train()
@@ -218,7 +173,7 @@ class Trainer:
                 self.model.eval()
                 metrics = {}
                 with tqdm.tqdm(self.dev_loader, unit="it") as pbar:
-                    pbar.set_description(f'[After training epoch] Evaluate epoch - dev {epoch}')
+                    pbar.set_description(f'Evaluate epoch - dev {epoch}')
                     for batch_idx, batch in enumerate(pbar):
                         # validate
                         batch_metrics = self.validation_step(batch, batch_idx, mode='dev')
