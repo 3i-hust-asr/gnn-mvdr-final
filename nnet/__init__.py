@@ -3,7 +3,7 @@ from .baseline import *
 from .chanvl import *
 
 def get_model(args):
-    if args.model == 'baseline':
+    if args.model == 'gnn':
         model = GNNFaS(args)
     elif args.model == 'baseline1':
         model = GNNFaS1(args)

@@ -16,7 +16,7 @@ def _evaluate(model_name, epoch, args):
     nnet.print_summary(model)
     augment_model = nnet.Augmentation(args)
 
-    ckpt_path = f'ckpt/{model_name}/checkpoints/{model_name}_epoch_{epoch}.ckpt'
+    ckpt_path = f'../ckpt/{model_name}/checkpoints/{model_name}_epoch_{epoch}.ckpt'
     # ckpt_path = f'ckpt/{model_name}_epoch_{epoch}.ckpt'
     if not os.path.exists(ckpt_path):
         raise ckpt_path
@@ -68,22 +68,6 @@ def _evaluate(model_name, epoch, args):
 
 
 def evaluate(args):
-    # all_metrics = {}
-    # for epoch in [3, 2, 1]:
-    #     metric = _evaluate('baseline', epoch, args)
-    #     all_metrics[f'epoch_{epoch}'] = metric
-
-    # with open('ckpt/baseline.json', 'w') as f:
-    #     json.dump(all_metrics, f, indent=4)
-
-
-    # all_metrics = {}
-    # for epoch in [12]:
-    #     metric = _evaluate('tencent', epoch, args)
-    #     all_metrics[f'epoch_{epoch}'] = metric
-    # with open('ckpt/tencent.json', 'w') as f:
-    #     json.dump(all_metrics, f, indent=4)
-        
     all_metrics = {}
     for epoch in [6, 5, 4, 3]:
         metric = _evaluate('mvdr', epoch, args)
