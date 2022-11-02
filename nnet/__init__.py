@@ -1,6 +1,6 @@
 from .augmentation import Augmentation
 from .baseline import *
-from .chanvl import *
+from .mvdr import *
 
 def get_model(args):
     if args.model == 'gnn':
